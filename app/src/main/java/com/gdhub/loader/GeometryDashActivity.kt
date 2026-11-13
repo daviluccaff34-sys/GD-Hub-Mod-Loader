@@ -155,6 +155,15 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
         renderer = Cocos2dxRenderer(gameView)
         gameView.setCocos2dxRenderer(renderer)
         root.addView(gameView, FrameLayout.LayoutParams(-1, -1))
+        gameView.queueEvent {
+            val state = runCatching { GdHubRuntime.nativeOnGameReady() }
+                .getOrElse { "ERROR|Falha ao verificar o runtime: ${it.message}" }
+            runOnUiThread {
+                runtimeReady = !state.startsWith("ERROR|")
+                output.text = state.substringAfter("|", state)
+                refreshModList()
+            }
+        }
         buildModOverlay(root)
         dashUiPanel = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
