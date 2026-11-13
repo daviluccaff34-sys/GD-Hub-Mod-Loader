@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090b18"><title>GD Hub Mod Creator</title>
+<style>
+:root{color-scheme:dark;--bg:#080b16;--panel:#121a30;--line:#2a385c;--text:#f4f6ff;--muted:#aab6d5;--cyan:#65e8f5;--purple:#a28bff;--pink:#ff80c8;--yellow:#ffe28a}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 75% 0%,#30245c 0,transparent 38%),var(--bg);color:var(--text);font:14px/1.5 system-ui, sans-serif}
+header{padding:24px max(18px,calc((100% - 1120px)/2));border-bottom:1px solid var(--line)}h1{font-size:clamp(26px,5vw,38px);margin:12px 0 4px}h2{font-size:18px;margin:0 0 12px}p{color:var(--muted);margin:4px 0}.brand{display:flex;gap:10px;align-items:center}.logo{background:linear-gradient(135deg,var(--purple),var(--cyan));color:#07101c;font-weight:1000;padding:8px 12px;border-radius:12px}
+main{max-width:1120px;margin:20px auto;padding:0 14px 40px;display:grid;grid-template-columns:1fr 1fr;gap:14px}.panel{background:linear-gradient(180deg,#151e37,#101629);border:1px solid var(--line);border-radius:16px;padding:17px;min-width:0}.wide{grid-column:1/-1}
+label{display:block;color:#d6def5;font-weight:700;font-size:12px;margin:10px 0 5px}input,textarea,select{width:100%;padding:11px;border:1px solid #39496e;border-radius:9px;background:#080f20;color:var(--text);font:inherit}textarea{min-height:260px;resize:vertical;font:13px/1.55 ui-monospace,monospace;tab-size:4}
+button{padding:10px 14px;border:0;border-radius:9px;background:linear-gradient(100deg,var(--purple),var(--cyan));color:#08101c;font-weight:900;cursor:pointer}button.alt{background:#263454;color:var(--text);border:1px solid #405176}button.danger{background:#49263d;color:#ffd6e9}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.muted{font-size:12px;color:var(--muted)}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.tab{background:#202b49;color:var(--text)}.tab.active{background:linear-gradient(100deg,var(--purple),var(--cyan));color:#08101c}
+.hidden{display:none!important}.notice{padding:11px;border:1px solid #756238;background:#2b2516;color:#ffe9ad;border-radius:10px;margin-top:10px}.good{border-color:#28675f;background:#102a2a;color:#b9f7e8}.bad{border-color:#77364c;background:#2c1722;color:#ffc0d0}
+pre,.preview{white-space:pre-wrap;overflow-wrap:anywhere;background:#080f20;border:1px dashed #3d4d76;border-radius:10px;padding:12px;min-height:90px;font:12px/1.5 ui-monospace,monospace}.ui-list{display:grid;gap:8px}.ui-item{display:grid;grid-template-columns:1fr 1fr auto;gap:7px;background:#0c1428;padding:9px;border:1px solid var(--line);border-radius:10px;align-items:center}.ui-item input{padding:8px}.object-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.object{background:#0c1428;border:1px solid var(--line);padding:10px;border-radius:9px}.object strong{display:block;color:var(--cyan)}footer{text-align:center;color:var(--muted);padding:20px;border-top:1px solid var(--line)}
+@media(max-width:760px){main{grid-template-columns:1fr}.wide{grid-column:auto}.ui-item{grid-template-columns:1fr 1fr}.object-grid{grid-template-columns:1fr 1fr}}
+</style></head>
+<body>
+<header><div class="brand"><div class="logo">GD</div><div><b>GD HUB · MOD CREATOR</b><div class="muted">LINGUAGEM PORTUGUESA · COMPILADOR · EMPACOTADOR</div></div></div><h1>Crie e compile seu mod.</h1><p>Escreva na linguagem DashPT, monte uma UI e gere um pacote GDHB para importar no GD Hub.</p></header>
+<main>
+<section class="panel"><h2>1 · Identidade do mod</h2>
+<label>Nome</label><input id="name" value="Meu Mod DashPT" maxlength="64">
+<label>ID único</label><input id="id" value="meu.mod.dashpt" maxlength="80">
+<label>Versão</label><input id="version" value="1.0.0" maxlength="32">
+<label>Autor</label><input id="author" value="Criador" maxlength="48">
+<label>Descrição</label><input id="description" value="Mod criado com GD Hub Mod Creator." maxlength="500">
+</section>
+<section class="panel"><h2>2 · O que vai no pacote?</h2>
+<p>O compilador cria o manifesto e transforma DashPT em DashCode, a linguagem que o runtime atual já interpreta.</p>
+<div class="notice">Atenção: objetos de fase e interfaces serão salvos no pacote como dados de projeto. O runtime atual ainda não possui o adaptador Cocos que desenha objetos/UI dentro do Geometry Dash. Eles não serão apresentados como recursos ativos no jogo antes dessa integração.</div>
+<div class="row" style="margin-top:12px"><button class="alt" id="example">Carregar exemplo</button><button class="alt" id="clear">Limpar código</button></div>
+</section>
+<section class="panel wide">
+<div class="tabs"><button class="tab active" data-tab="code">Código DashPT</button><button class="tab" data-tab="objects">Objetos GD</button><button class="tab" data-tab="ui">UI Builder</button><button class="tab" data-tab="compiled">Código compilado</button></div>
+<div id="pane-code"><h2>3 · Código do mod</h2><p>Comandos suportados nesta versão: <b>fale</b>, <b>crie variavel</b>, <b>defina</b>, <b>some</b>, <b>se</b>, <b>senao</b>, <b>repita</b> e <b>fim</b>.</p>
+<label>Seu código .dashpt</label><textarea id="source" spellcheck="false"># Meu primeiro mod em português
+crie variavel jogador = "Cube"
+crie variavel pontos = 0
+
+repita 3
+    some 10 em pontos
+fim
+
+se pontos >= 30
+    fale "{jogador} fez {pontos} pontos!"
+senao
+    fale "Continue tentando!"
+fim</textarea>
+<p class="muted">Use aspas para textos. Condições aceitam ==, !=, &gt;, &lt;, &gt;= e &lt;=. A indentação é livre.</p></div>
+<div id="pane-objects" class="hidden"><h2>4 · Rascunho de objetos Geometry Dash</h2><p>Adicione objetos ao mapa de dados do projeto. As coordenadas são valores do editor, não pixels do celular.</p>
+<div class="object-grid" id="objectButtons"></div><div class="ui-list" id="objects" style="margin-top:12px"></div></div>
+<div id="pane-ui" class="hidden"><h2>5 · Montador de interface (UI Builder)</h2><p>Monte a estrutura de uma interface para seu mod.</p>
+<div class="row"><select id="uiType"><option value="painel">Painel</option><option value="texto">Texto</option><option value="botao">Botão</option><option value="imagem">Imagem</option><option value="alternador">Alternador</option><option value="barra">Barra de progresso</option></select><button id="addUi">Adicionar componente</button></div>
+<div id="uiList" class="ui-list" style="margin-top:12px"></div><label>Prévia estrutural</label><div id="uiPreview" class="preview">Sua interface aparecerá aqui.</div></div>
+<div id="pane-compiled" class="hidden"><h2>6 · Resultado da compilação</h2><pre id="compiled">Clique em Validar e compilar para ver o DashCode gerado.</pre></div>
+<div class="row" style="margin-top:14px"><button id="validate">Validar código</button><button id="build">Compilar e gerar .gdhb</button></div><div id="status" class="notice" role="status">Pronto para criar. A validação não executa código no jogo.</div>
+</section>
+<section class="panel wide"><h2>7 · Como importar no GD Hub</h2><ol><li>Gere o arquivo <code>.gdhb</code>.</li><li>Abra o GD Hub Mod Loader no Android.</li><li>Entre no gerenciador de mods e escolha importar/instalar pacote.</li><li>Selecione o arquivo salvo no aparelho.</li></ol><p class="muted">O pacote usa GDHB v1, com manifest.json e src/main.dash obrigatórios. O loader executa os comandos DashCode reconhecidos pelo runtime atual.</p></section>
+</main><footer>GD Hub Mod Creator · Compilação DashPT → DashCode · Empacotamento GDHB v1</footer>
+<script>
+const $=id=>document.getElementById(id);let objects=[],uis=[],serial=0;
+const objectTypes=["bloco","espinho","serra","portal_cubo","portal_nave","portal_bola","portal_ufo","portal_onda","portal_robo","portal_aranha","portal_gravidade","moeda","checkpoint","gatilho"];
+$("objectButtons").innerHTML=objectTypes.map(t=>'<button class="object" data-object="'+t+'"><strong>'+t+'</strong><span class="muted">Adicionar ao mapa</span></button>').join("");
+document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("active",x===b));["code","objects","ui","compiled"].forEach(t=>$("pane-"+t).classList.toggle("hidden",t!==b.dataset.tab))});
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+document.querySelectorAll("[data-object]").forEach(b=>b.onclick=()=>{objects.push({tipo:b.dataset.object,x:objects.length*120,y:0});renderObjects()});
+function renderObjects(){$("objects").innerHTML=objects.map((o,i)=>'<div class="ui-item"><b>'+esc(o.tipo)+'</b><input type="number" data-obj-x="'+i+'" value="'+o.x+'" aria-label="X"><input type="number" data-obj-y="'+i+'" value="'+o.y+'" aria-label="Y"><button class="danger" data-obj-del="'+i+'">Excluir</button></div>').join("")||'<p class="muted">Nenhum objeto adicionado.</p>';document.querySelectorAll("[data-obj-x]").forEach(x=>x.onchange=()=>objects[+x.dataset.objX].x=Number(x.value));document.querySelectorAll("[data-obj-y]").forEach(x=>x.onchange=()=>objects[+x.dataset.objY].y=Number(x.value));document.querySelectorAll("[data-obj-del]").forEach(x=>x.onclick=()=>{objects.splice(+x.dataset.objDel,1);renderObjects()})}
+$("addUi").onclick=()=>{uis.push({id:"ui_"+(++serial),tipo:$("uiType").value,text:$("uiType").value==="botao"?"Meu botão":$("uiType").value==="texto"?"Texto do mod":$("uiType").value});renderUi()};
+function renderUi(){$("uiList").innerHTML=uis.map((u,i)=>'<div class="ui-item"><b>'+esc(u.tipo)+'</b><input data-ui-text="'+i+'" value="'+esc(u.text)+'" aria-label="Texto do componente"><button class="danger" data-ui-del="'+i+'">Excluir</button></div>').join("")||'<p class="muted">Adicione um componente acima.</p>';$("uiPreview").textContent=uis.map(u=>u.tipo.toUpperCase()+": "+u.text).join("\n")||"Sua interface aparecerá aqui.";document.querySelectorAll("[data-ui-text]").forEach(x=>x.oninput=()=>{uis[+x.dataset.uiText].text=x.value;$("uiPreview").textContent=uis.map(u=>u.tipo.toUpperCase()+": "+u.text).join("\n")});document.querySelectorAll("[data-ui-del]").forEach(x=>x.onclick=()=>{uis.splice(+x.dataset.uiDel,1);renderUi()})}
+const example=$("source").value;$("example").onclick=()=>{$("source").value=example};$("clear").onclick=()=>{$("source").value=""};
+function compile(src){let out=[],stack=[],lines=src.replace(/\r/g,"").split("\n");for(let i=0;i<lines.length;i++){let s=lines[i].trim();if(!s||s.startsWith("#")){out.push(lines[i].startsWith("#")?s:"");continue}
+let m;
+if((m=s.match(/^fale\s+(.+)$/)))out.push("say "+m[1]);
+else if((m=s.match(/^crie variavel\s+([A-Za-z_][\w]*)\s*=\s*(.+)$/)))out.push("make "+m[1]+" = "+m[2]);
+else if((m=s.match(/^defina\s+([A-Za-z_][\w]*)\s+como\s+(.+)$/)))out.push("set "+m[1]+" to "+m[2]);
+else if((m=s.match(/^some\s+(.+)\s+em\s+([A-Za-z_][\w]*)$/)))out.push("add "+m[1]+" to "+m[2]);
+else if((m=s.match(/^se\s+(.+)$/))){out.push("if "+m[1]);stack.push("if")}
+else if(s==="senao"){if(stack[stack.length-1]!=="if")throw Error("Linha "+(i+1)+": senao precisa estar dentro de se.");out.push("else")}
+else if((m=s.match(/^repita\s+(\d+)$/))){let n=Number(m[1]);if(n>1000)throw Error("Linha "+(i+1)+": repita aceita de 0 a 1000.");out.push("repeat "+n);stack.push("repeat")}
+else if(s==="fim"){if(!stack.length)throw Error("Linha "+(i+1)+": fim sem bloco aberto.");stack.pop();out.push("end")}
+else throw Error("Linha "+(i+1)+": comando desconhecido: "+s);
+}if(stack.length)throw Error("Falta 'fim' para fechar um bloco.");return out.join("\n").trim()+"\n"}
+function makeEntries(){let source=compile($("source").value);let manifest={id:$("id").value.trim(),name:$("name").value.trim(),version:$("version").value.trim(),author:$("author").value.trim(),description:$("description").value.trim(),entry:"src/main.dash",createdWith:"GD Hub Mod Creator",language:"DashPT-1"};if(!/^[a-zA-Z0-9._-]{1,80}$/.test(manifest.id))throw Error("ID inválido. Use letras, números, ponto, hífen ou _.");for(let k of ["name","version","author","description"])if(!manifest[k])throw Error("Preencha o campo "+k+".");if(!source.trim())throw Error("O código compilado está vazio.");let files=[["manifest.json",JSON.stringify(manifest,null,2)],["src/main.dash",source]];if(objects.length)files.push(["level/objects.json",JSON.stringify({format:"gdhub-level-draft-1",objects},null,2)]);if(uis.length)files.push(["ui/layout.json",JSON.stringify({format:"gdhub-ui-draft-1",components:uis},null,2)]);return {source,files}}
+function bytes(s){return new TextEncoder().encode(s)}function u16(n){return [n&255,n>>>8&255]}function u32(n){return [n&255,n>>>8&255,n>>>16&255,n>>>24&255]}function join(parts){let n=parts.reduce((a,b)=>a+b.length,0),r=new Uint8Array(n),p=0;for(let x of parts){r.set(x,p);p+=x.length}return r}
+function pack(files){if(files.length>128)throw Error("Limite de 128 arquivos excedido.");let parts=[bytes("GDHB"),new Uint8Array([...u16(1),...u16(files.length)])];for(let [path,data] of files){let p=bytes(path),d=bytes(data);if(p.length>240||d.length>4*1024*1024)throw Error("Arquivo excede limite: "+path);parts.push(new Uint8Array([...u16(p.length),...u32(d.length)]),p,d)}let result=join(parts);if(result.length>16*1024*1024)throw Error("Pacote ultrapassa 16 MiB.");return result}
+function status(msg,ok){$("status").textContent=msg;$("status").className="notice "+(ok?"good":"bad")}
+$("validate").onclick=()=>{try{let x=makeEntries();$("compiled").textContent=x.source;status("DashPT válido! "+x.files.length+" arquivo(s) serão incluídos. O código compilado usa somente comandos do interpretador atual.",true);document.querySelector('[data-tab="compiled"]').click()}catch(e){status("Erro: "+e.message,false)}};
+$("build").onclick=()=>{try{let x=makeEntries();let bin=pack(x.files),url=URL.createObjectURL(new Blob([bin],{type:"application/octet-stream"})),a=document.createElement("a");a.href=url;a.download=$("id").value.trim()+".gdhb";a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);$("compiled").textContent=x.source;let extras=(objects.length?"\n"+objects.length+" objeto(s) salvos como rascunho":"")+(uis.length?"\n"+uis.length+" componente(s) de UI salvos como rascunho":"");status("Pacote GDHB v1 gerado: "+a.download+" ("+(bin.length/1024).toFixed(1)+" KiB).\nO script principal pode ser lido pelo runtime atual."+extras+"\nObjetos e UI são dados de projeto e ainda precisam da integração nativa para aparecer no jogo.",true);document.querySelector('[data-tab="compiled"]').click()}catch(e){status("Falha na compilação: "+e.message,false)}};
+</script></body></html>
