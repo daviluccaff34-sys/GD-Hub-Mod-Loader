@@ -20,6 +20,14 @@ if(ANDROID)
     target_compile_definitions(gdhub_loader PRIVATE GDHUB_ANDROID=1)
     target_link_libraries(gdhub_loader PRIVATE dl)
     target_sources(gdhub_loader PRIVATE loader/jni/jni_bridge.cpp)
+
+    add_library(gdhub_launcherfix SHARED
+        loader/launcherfix/launcher-fix.cpp
+        loader/launcherfix/patcher.cpp
+    )
+    target_include_directories(gdhub_launcherfix PRIVATE loader/launcherfix)
+    target_compile_features(gdhub_launcherfix PRIVATE cxx_std_20)
+    target_link_libraries(gdhub_launcherfix PRIVATE dl log)
 endif()
 
 include(CTest)
