@@ -31,7 +31,7 @@ public class MainActivity extends Activity {
     private TextView publishStatus, selectedPackageLabel;
     private EditText publishName, publishVersion, publishAuthor, publishDescription;
     private File selectedPublishFile;
-    private LinearLayout managerPage, publishPage;
+    private View managerPage, publishPage;
     private Button managerTab, publishTab;
     private final ArrayList<File> packages=new ArrayList<>();
     private SharedPreferences modPrefs;
@@ -84,7 +84,7 @@ public class MainActivity extends Activity {
         publishTab.setBackground(box(publishing?PURPLE:PANEL,13));
     }
 
-    private LinearLayout buildManagerPage(){
+    private View buildManagerPage(){
         ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setBackgroundColor(BG);
         LinearLayout page=new LinearLayout(this);page.setOrientation(1);page.setPadding(0,dp(8),0,dp(10));scroll.addView(page);
         page.addView(text("Seus pacotes. Seu controle.",19,TEXT,true));
@@ -102,7 +102,7 @@ public class MainActivity extends Activity {
         return scroll;
     }
 
-    private LinearLayout buildPublishPage(){
+    private View buildPublishPage(){
         ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setBackgroundColor(BG);
         LinearLayout page=new LinearLayout(this);page.setOrientation(1);page.setPadding(0,dp(8),0,dp(18));scroll.addView(page);
         page.addView(text("PUBLICAR UM MOD",20,TEXT,true));
