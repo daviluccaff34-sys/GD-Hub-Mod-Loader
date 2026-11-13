@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <cstddef>
 #include <vector>
 #include <unordered_map>
 #include <variant>
@@ -24,7 +25,8 @@ private:
                        Variables& variables,
                        std::vector<std::string>& output,
                        std::size_t& steps,
-                       bool stop_on_else);
+                       bool stop_on_else,
+                       bool expect_end);
 
     bool evaluate_condition(const std::string& condition,
                             const Variables& variables,
