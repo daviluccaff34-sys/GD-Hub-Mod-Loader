@@ -159,7 +159,7 @@ public class MainActivity extends Activity {
     private void runPackage(File file) {
         try {
             String result = nativeRunPackage(file.getAbsolutePath());
-            status.setText(result.replace("\n", "\n"));
+            status.setText(result);
         } catch (Throwable error) {
             status.setText("Erro no runtime nativo: " + error.getMessage());
         }
