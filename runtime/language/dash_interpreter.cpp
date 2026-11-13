@@ -3,10 +3,15 @@
 #include <algorithm>
 #include <cctype>
 #include <cstdlib>
+#include <cmath>
 #include <sstream>
 
 namespace gdhub::language {
 namespace {
+constexpr std::size_t kMaxSourceBytes = 4u * 1024u * 1024u;
+constexpr std::size_t kMaxExecutionSteps = 100000u;
+constexpr std::size_t kMaxOutputLines = 10000u;
+constexpr std::size_t kMaxOutputLineBytes = 4096u;
 
 std::string trim(const std::string& value) {
     const auto first = value.find_first_not_of(" \t\r");
@@ -46,6 +51,10 @@ bool numeric(const Value& value, double& out) {
 bool DashInterpreter::run(const std::string& source, std::vector<std::string>& output) {
     m_error.clear();
     output.clear();
+    if (source.size() > kMaxSourceBytes) {
+        m_error = "Código DashCode excede o limite de 4 MiB.";
+        return false;
+    }
 
     std::vector<std::string> lines;
     std::istringstream input(source);
@@ -58,7 +67,11 @@ bool DashInterpreter::run(const std::string& source, std::vector<std::string>& o
 
     Variables variables;
     std::size_t index = 0;
-    if (!execute_block(lines, index, variables, output, false)) return false;
+    std::size_t steps = 0;
+    if (!execute_block(lines, index, variables, output, steps, false)) {
+        output.clear();
+        return false;
+    }
     if (index != lines.size()) {
         m_error = "Bloco incompleto: faltou 'end'.";
         return false;
@@ -80,6 +93,7 @@ bool DashInterpreter::evaluate_value(const std::string& raw,
     char* end = nullptr;
     const double number = std::strtod(expression.c_str(), &end);
     if (!expression.empty() && end == expression.c_str() + expression.size()) {
+        if (!std::isfinite(number)) { m_error = "Número fora do limite."; return false; }
         value = number;
         return true;
     }
@@ -154,8 +168,13 @@ bool DashInterpreter::execute_block(const std::vector<std::string>& lines,
                                     std::size_t& index,
                                     Variables& variables,
                                     std::vector<std::string>& output,
+                                    std::size_t& steps,
                                     bool stop_on_else) {
     while (index < lines.size()) {
+        if (++steps > kMaxExecutionSteps) {
+            m_error = "Limite de 100.000 instruções por execução atingido.";
+            return false;
+        }
         const std::string line = lines[index];
         if (line == "end") { ++index; return true; }
         if (line == "else") return stop_on_else;
@@ -163,7 +182,12 @@ bool DashInterpreter::execute_block(const std::vector<std::string>& lines,
         if (line.rfind("say ", 0) == 0) {
             Value value;
             if (!evaluate_value(line.substr(4), variables, value)) return false;
-            output.push_back(interpolate(value_to_string(value), variables));
+            const std::string rendered = interpolate(value_to_string(value), variables);
+            if (output.size() >= kMaxOutputLines || rendered.size() > kMaxOutputLineBytes) {
+                m_error = "Limite de saída do mod excedido.";
+                return false;
+            }
+            output.push_back(rendered);
             ++index;
             continue;
         }
@@ -213,7 +237,7 @@ bool DashInterpreter::execute_block(const std::vector<std::string>& lines,
             Value count_value;
             if (!evaluate_value(line.substr(7), variables, count_value)) return false;
             double count_number = 0;
-            if (!numeric(count_value, count_number) || count_number < 0 || count_number > 1000) {
+            if (!numeric(count_value, count_number) || count_number < 0 || count_number > 1000 || std::floor(count_number) != count_number) {
                 m_error = "repeat aceita um número entre 0 e 1000.";
                 return false;
             }
@@ -222,7 +246,7 @@ bool DashInterpreter::execute_block(const std::vector<std::string>& lines,
             std::size_t after_body = body_start;
             for (int n = 0; n < static_cast<int>(count_number); ++n) {
                 std::size_t cursor = body_start;
-                if (!execute_block(lines, cursor, variables, output, false)) return false;
+                if (!execute_block(lines, cursor, variables, output, steps, false)) return false;
                 after_body = cursor;
             }
             if (count_number == 0) {
@@ -245,7 +269,7 @@ bool DashInterpreter::execute_block(const std::vector<std::string>& lines,
             if (!evaluate_condition(line.substr(3), variables, condition)) return false;
             ++index;
             if (condition) {
-                if (!execute_block(lines, index, variables, output, true)) return false;
+                if (!execute_block(lines, index, variables, output, steps, true)) return false;
                 if (index < lines.size() && lines[index] == "else") {
                     ++index;
                     std::size_t cursor = index;
@@ -272,7 +296,7 @@ bool DashInterpreter::execute_block(const std::vector<std::string>& lines,
                 if (depth != 0) { m_error = "Bloco if sem end."; return false; }
                 if (else_at != lines.size()) {
                     index = else_at + 1;
-                    if (!execute_block(lines, index, variables, output, false)) return false;
+                    if (!execute_block(lines, index, variables, output, steps, false)) return false;
                 } else {
                     index = cursor;
                 }
