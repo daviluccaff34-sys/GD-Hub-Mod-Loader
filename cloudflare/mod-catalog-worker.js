@@ -86,6 +86,10 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/+$/, "") || "/";
 
+    if (request.method === "GET" && path === "/health") {
+      return json({ ok: true, service: "gdhub-mod-catalog", storage: "bound", moderationConfigured: Boolean(env.ADMIN_TOKEN) });
+    }
+
     if (request.method === "GET" && path === "/v1/mods") {
       const mods = await listByStatus(env.MODS, "approved");
       mods.sort((a, b) => String(b.publishedAt).localeCompare(String(a.publishedAt)));
