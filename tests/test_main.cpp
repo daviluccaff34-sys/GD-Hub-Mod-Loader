@@ -92,6 +92,23 @@ int main() {
     ok &= check(c_status == 0 && std::string(c_output.data()) == "hello",
                 "C API executes package and returns output");
     gdhub_runtime_destroy(c_runtime);
+
+    const std::string bad_path = "test_bad_path.gdhb";
+    {
+        std::ofstream out(bad_path, std::ios::binary);
+        const std::string unsafe = "../outside.txt";
+        out.write("GDHB", 4);
+        out.put(1); out.put(0);
+        out.put(1); out.put(0);
+        const unsigned path_size = static_cast<unsigned>(unsafe.size());
+        out.put(static_cast<char>(path_size & 255));
+        out.put(static_cast<char>((path_size >> 8) & 255));
+        out.put(1); out.put(0); out.put(0); out.put(0);
+        out.write(unsafe.data(), static_cast<std::streamsize>(unsafe.size()));
+        out.put('x');
+    }
+    ok &= check(!reader.inspect(bad_path, info), "GDHB rejects directory traversal paths");
+    std::remove(bad_path.c_str());
     std::remove(package_path.c_str());
     return ok ? 0 : 1;
 }
