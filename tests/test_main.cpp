@@ -37,6 +37,10 @@ int main() {
     ok &= check(!interpreter.run("say missing\n", output), "unknown variable is rejected");
     ok &= check(!interpreter.run("repeat 1.5\nsay \"bad\"\nend\n", output),
                 "repeat rejects fractional counts");
+    ok &= check(!interpreter.run("if true\nsay \"missing end\"\n", output),
+                "unterminated blocks are rejected");
+    ok &= check(!interpreter.run("else\n", output) && !interpreter.run("end\n", output),
+                "stray else/end markers are rejected");
     const std::string runaway =
         "repeat 1000\nrepeat 1000\nmake x = 1\nend\nend\n";
     ok &= check(!interpreter.run(runaway, output) && output.empty(),
