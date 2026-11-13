@@ -32,7 +32,7 @@ public class MainActivity extends Activity {
     private EditText publishName, publishVersion, publishAuthor, publishDescription;
     private File selectedPublishFile;
     private View managerPage, publishPage;
-    private Button managerTab, publishTab;
+    private Button managerTab, publishTab, launchButton;
     private final ArrayList<File> packages=new ArrayList<>();
     private SharedPreferences modPrefs;
     private static final String PREFS_MODS="gdhub_mod_states";
@@ -87,8 +87,8 @@ public class MainActivity extends Activity {
         LinearLayout page=new LinearLayout(this);page.setOrientation(1);page.setPadding(0,dp(8),0,dp(10));scroll.addView(page);
         page.addView(text("Seus pacotes. Seu controle.",19,TEXT,true));
         TextView hint=text("Importe e execute pacotes .GDHB compatíveis.",12,MUTED,false);hint.setPadding(0,dp(5),0,dp(12));page.addView(hint);
-        Button launch=button("▶  INICIAR JOGO COM MOD LOADER",0xFF6842D8);
-        LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,dp(52));lp.bottomMargin=dp(10);page.addView(launch,lp);launch.setOnClickListener(v->launchGeometryDash());
+        launchButton=button("▶  INICIAR JOGO COM MOD LOADER",0xFF6842D8);
+        LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,dp(52));lp.bottomMargin=dp(10);page.addView(launchButton,lp);launchButton.setOnClickListener(v->launchGeometryDash());
         LinearLayout actions=new LinearLayout(this);
         Button add=button("+  Importar pacote",PURPLE);add.setOnClickListener(v->pickPackage());actions.addView(add,new LinearLayout.LayoutParams(0,dp(48),1));
         Button refresh=button("↻",PANEL);refresh.setOnClickListener(v->scanPackages());LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(dp(56),dp(48));rp.leftMargin=dp(8);actions.addView(refresh,rp);page.addView(actions);
@@ -263,30 +263,45 @@ public class MainActivity extends Activity {
     }
 
     private void launchGeometryDash(){
+        if(launchButton!=null) launchButton.setEnabled(false);
+        status.setText("Verificando Geometry Dash…");
         GameInstallProbe.Result game=GameInstallProbe.inspect(this);
-        if(!game.installed){
-            status.setText("Geometry Dash não encontrado. Instale o jogo oficial primeiro.");
-            new android.app.AlertDialog.Builder(this)
-                .setTitle("Geometry Dash não encontrado")
-                .setMessage("O GD Hub procura o pacote "+GameInstallProbe.GAME_PACKAGE+".")
+        String failure=null;
+        if(!game.installed) {
+            failure="Geometry Dash não está instalado. Instale a versão oficial e tente novamente.";
+        } else if(game.versionCode!=41L) {
+            failure="Esta versão do GD Hub foi preparada para Geometry Dash 2.2081 (versionCode 41).\nVersão detectada: "+game.unifiedVersion+" (code "+game.versionCode+").";
+        } else {
+            String abi=android.os.Process.is64Bit()?"arm64-v8a":"armeabi-v7a";
+            if(!GameInstallProbe.hasGameLibraries(game,abi)) {
+                failure="O APK instalado não contém as bibliotecas nativas do Geometry Dash para "+abi+".\nABIs detectadas: "+android.text.TextUtils.join(", ",game.supportedAbis);
+            }
+        }
+        if(failure!=null) {
+            status.setText(failure);
+            if(launchButton!=null) launchButton.setEnabled(true);
+            new android.app.AlertDialog.Builder(this).setTitle("Não foi possível iniciar").setMessage(failure)
                 .setPositiveButton("OK",null).show();
             return;
         }
-        StringBuilder details=new StringBuilder();
-        details.append("Versão do APK: ").append(game.versionName).append(" (").append(game.versionCode).append(")\n");
-        details.append("Versão Geometry Dash: ").append(game.unifiedVersion).append("\n");
-        details.append("ABIs do aparelho: ").append(android.text.TextUtils.join(", ",game.supportedAbis)).append("\n");
-        details.append("Bibliotecas nativas: ").append(GameInstallProbe.hasNativeLibraryDirectory(game)?"diretório encontrado":"diretório não encontrado").append("\n");
-        details.append("APK base: ").append(game.sourceApk).append("\n\n");
-        status.setText("Iniciando Geometry Dash dentro do GD Hub…");
+        status.setText("Abrindo o host interno do GD Hub…");
         try {
-            startActivity(new android.content.Intent(this, GeometryDashActivity.class));
+            Intent intent=new Intent(this,GeometryDashActivity.class);
+            intent.putExtra("game_version_code",game.versionCode);
+            startActivity(intent);
         } catch (Throwable error) {
-            status.setText("Falha ao iniciar o jogo: " + error.getMessage());
-            new android.app.AlertDialog.Builder(this).setTitle("Falha ao iniciar")
-                .setMessage(details.toString() + "\\n\\n" + error.getMessage())
-                .setPositiveButton("OK", null).show();
+            String message="Falha ao abrir o launcher interno: "+(error.getMessage()==null?error.getClass().getSimpleName():error.getMessage());
+            status.setText(message);
+            new android.app.AlertDialog.Builder(this).setTitle("Erro ao iniciar").setMessage(message)
+                .setPositiveButton("OK",null).show();
+            if(launchButton!=null) launchButton.setEnabled(true);
         }
+    }
+
+    @Override protected void onResume(){
+        super.onResume();
+        if(launchButton!=null) launchButton.setEnabled(true);
+        if(list!=null) scanPackages();
     }
 
     private void runPackage(File file){try{status.setText(GdHubRuntime.nativeRunPackage(file.getAbsolutePath()));}catch(Throwable e){status.setText("Erro no runtime nativo: "+e.getMessage());}}
