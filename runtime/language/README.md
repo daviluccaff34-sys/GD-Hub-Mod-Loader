@@ -1,14 +1,16 @@
-# DashFlow runtime
+# DashCode runtime
 
-DashFlow is the proposed interpreted language for GD Hub mods.
+DashCode is the simple interpreted language used by GD Hub packages.
 
-Planned implementation stages:
-1. Lexer: tokenize source files.
-2. Parser: validate syntax and build an AST.
-3. Runtime values: numbers, strings, booleans, lists and maps.
-4. Evaluator: variables, expressions, conditions, loops and functions.
-5. Standard library: safe logging, math and mod-owned storage.
-6. Event bridge: deliver approved game events to scripts.
-7. Permission checks and execution limits.
+Implemented in the current prototype:
+- variables with text, number and boolean values;
+- say output and variable interpolation;
+- set and numeric add;
+- if/else conditions;
+- repeat loops;
+- comments;
+- source, instruction and output limits.
 
-No interpreter is implemented in this directory yet. See [the language specification](../../docs/LANGUAGE.md).
+The current interpreter is a small line-based evaluator, not yet a full lexer/parser/AST language engine. Functions, lists, maps, modules, events, editor actions and the Geometry Dash API are planned but not implemented.
+
+See docs/LANGUAGE.md for the supported syntax and limitations.
