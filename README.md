@@ -2,26 +2,28 @@
 
 Independent Android mod-loader research project for Geometry Dash **2.2081**.
 
-## Initial targets
-- Android ARM32: `armeabi-v7a`
-- Android ARM64: `arm64-v8a`
+## Targets
+- Android ARM32: armeabi-v7a
+- Android ARM64: arm64-v8a
 - Native core: C++17
-- Mod package: `.gdhb` (packed source + manifest; **not compiled**)
+- Package: .gdhb (manifest + source files; **not compiled**)
 
-## Project status
-**0.1.0-alpha — project scaffold.** This repository currently contains the initial structure and build configuration only. It does not yet inject into, hook, or modify Geometry Dash.
+## Current prototype
+- DashCode interpreter with variables, output, arithmetic addition, conditions, loops and text interpolation.
+- GDHB v1 reader with file-size bounds, safe-path checks, duplicate detection and required-file validation.
+- Python packager at packager/gdhb_pack.py.
+- Native tests run through CMake/CTest and GitHub Actions.
 
-## Planned components
-- `loader/`: loader core and game integration boundary
-- `runtime/`: future interpreter, API and event system for the GD Hub language
-- `packager/`: validation and packaging of source files into `.gdhb`
-- `android/`: Android ABI/build support
-- `tests/`: format and runtime tests
+The reader currently returns src/main.dash as text. The loader does not yet install packages, expose game actions, or integrate into the Geometry Dash process.
 
-## Package principle
-A `.gdhb` file is a package, not a compiled binary. The loader will eventually read its manifest and source files and execute supported instructions through its own runtime.
+## Build native tests
+    cmake -S . -B build -DBUILD_TESTING=ON
+    cmake --build build
+    ctest --test-dir build --output-on-failure
 
-## Build
-The first milestone is a native library build for Android. A successful build does **not** mean in-game integration is complete.
+## Create a package
+    python3 packager/gdhb_pack.py --manifest manifest.json --source main.dash --output example.gdhb
 
-See [docs/ROADMAP.md](docs/ROADMAP.md) and [docs/FORMAT_GDHB.md](docs/FORMAT_GDHB.md).
+The package manifest must contain text fields id, name, and version. The source remains DashCode and is interpreted later.
+
+See docs/ROADMAP.md and docs/FORMAT_GDHB.md.
