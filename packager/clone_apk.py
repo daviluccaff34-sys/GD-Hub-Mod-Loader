@@ -63,7 +63,10 @@ def main() -> int:
     if not args.storepass:
         raise RuntimeError("Defina GDHUB_KEYSTORE_PASSWORD antes de criar a chave de assinatura.")
 
-    apktool = tool("apktool", args.apktool)
+    if args.apktool and args.apktool.lower().endswith(".jar"):
+        apktool_cmd = [tool("java"), "-jar", str(Path(args.apktool).resolve())]
+    else:
+        apktool_cmd = [tool("apktool", args.apktool)]
     zipalign = tool("zipalign", args.zipalign)
     apksigner = tool("apksigner", args.apksigner)
     keytool = tool("keytool", args.keytool)
@@ -74,7 +77,7 @@ def main() -> int:
         decoded = work / "decoded"
         unsigned = work / "clone-unsigned.apk"
         aligned = work / "clone-aligned.apk"
-        run([apktool, "d", "-f", str(args.input), "-o", str(decoded)])
+        run(apktool_cmd + ["d", "-f", str(args.input), "-o", str(decoded)])
 
         manifest = decoded / "AndroidManifest.xml"
         if not manifest.is_file():
@@ -97,7 +100,7 @@ def main() -> int:
             libdir.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source, libdir / "libgdhub_loader.so")
 
-        run([apktool, "b", str(decoded), "-o", str(unsigned)])
+        run(apktool_cmd + ["b", str(decoded), "-o", str(unsigned)])
         run([zipalign, "-f", "4", str(unsigned), str(aligned)])
 
         keystore = args.keystore or (args.output.parent / "gdhub-clone-release.jks")
