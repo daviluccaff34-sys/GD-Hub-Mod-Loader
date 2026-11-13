@@ -8,15 +8,15 @@ This folder contains the public mod-catalog API Worker.
 - It accepts `.gdhb` files, checks the 16 MiB limit and GDHB magic header, and saves a local draft.
 - When the API URL is configured, the app uploads the package to `POST /v1/mods`.
 - New uploads are **pending review**. They are not visible or downloadable until an administrator approves them.
-- The connected Cloudflare account currently reports that R2 has not been enabled. The Worker cannot store package files until R2 is enabled and a bucket is bound.
+- The catalog uses Workers KV instead of R2 so package publishing can work without enabling R2. Each `.gdhb` is limited to 16 MiB, below KV's 25 MiB maximum value size.
 
 ## Enable storage
 
 1. Open the Cloudflare Dashboard.
-2. Open **R2 Object Storage** and complete its first-time enablement.
-3. Create a bucket named `gdhub-mods`.
+2. Open **Workers KV** and no additional R2 setup is required; the catalog uses Workers KV.
+3. The `GDHUB_MOD_CATALOG` KV namespace is created and bound to the Worker.
 4. Create/deploy a Worker using `mod-catalog-worker.js`.
-5. Add an R2 binding named `MODS_BUCKET` pointing to `gdhub-mods`.
+5. Add a KV binding named `MODS` pointing to `GDHUB_MOD_CATALOG`.
 6. Add a Worker secret named `ADMIN_TOKEN` with a long random value. Keep it private; it is used only for moderation.
 7. Deploy the Worker and note its HTTPS `workers.dev` URL.
 
@@ -40,4 +40,4 @@ The Worker validates the GDHB v1 structure, required manifest fields, source ent
 
 ## Abuse controls before opening submissions widely
 
-Configure Cloudflare rate limiting for `POST /v1/mods` and review pending submissions regularly. Keep the R2 bucket private; downloads are served through the Worker after approval. Do not expose the admin token in the app.
+Configure Cloudflare rate limiting for `POST /v1/mods` and review pending submissions regularly. Keep the KV namespace private; downloads are served through the Worker after approval. Do not expose the admin token in the app.
