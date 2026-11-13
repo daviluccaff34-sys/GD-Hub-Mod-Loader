@@ -265,14 +265,17 @@ public class MainActivity extends Activity {
     }
 
     private void launchGeometryDash(){
-        final String gamePackage="com.robtopx.geometryjump";
+        final String clonePackage="com.gdhub.geometryjump";
         try{
-            Intent launch=getPackageManager().getLaunchIntentForPackage(gamePackage);
-            if(launch==null){status.setText("Geometry Dash não encontrado. Instale o jogo oficial primeiro.");return;}
+            Intent launch=getPackageManager().getLaunchIntentForPackage(clonePackage);
+            if(launch==null){
+                status.setText("Clone GD Hub não instalado. Primeiro gere e instale o APK Geometry Dash (GD Hub). O jogo original permanece separado.");
+                return;
+            }
             launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            status.setText("Abrindo Geometry Dash… A integração dentro do jogo ainda está em desenvolvimento.");
+            status.setText("Abrindo Geometry Dash (GD Hub)…");
             startActivity(launch);
-        }catch(Exception e){status.setText("Não foi possível iniciar o Geometry Dash: "+e.getMessage());}
+        }catch(Exception e){status.setText("Não foi possível iniciar o clone GD Hub: "+e.getMessage());}
     }
 
     private void runPackage(File file){try{status.setText(nativeRunPackage(file.getAbsolutePath()));}catch(Throwable e){status.setText("Erro no runtime nativo: "+e.getMessage());}}
