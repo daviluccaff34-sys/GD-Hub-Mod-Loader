@@ -1,3 +1,11 @@
+#include <jni.h>
+#include "runtime/mod_runtime.hpp"
+#include "loader/game/cocos_runtime_symbols.hpp"
+#include <string>
+#include <vector>
+#include <atomic>
+#include <mutex>
+
 namespace {
 std::atomic_bool g_dash_cancel{false};
 std::mutex g_dash_run_mutex;
@@ -27,14 +35,6 @@ extern "C" JNIEXPORT void JNICALL
 Java_com_gdhub_loader_GdHubRuntime_nativeStopDashCode(JNIEnv*, jclass) {
     g_dash_cancel.store(true, std::memory_order_relaxed);
 }
-#include <jni.h>
-#include "runtime/mod_runtime.hpp"
-#include "loader/game/cocos_runtime_symbols.hpp"
-#include <string>
-#include <vector>
-#include <atomic>
-#include <mutex>
-
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_gdhub_loader_MainActivity_nativeRunPackage(JNIEnv* env, jobject,
                                                       jstring java_path) {
