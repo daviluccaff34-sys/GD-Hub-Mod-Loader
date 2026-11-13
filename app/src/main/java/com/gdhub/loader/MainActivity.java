@@ -37,8 +37,6 @@ public class MainActivity extends Activity {
     private SharedPreferences modPrefs;
     private static final String PREFS_MODS="gdhub_mod_states";
     private static final String PREFS_DRAFT="gdhub_publish_draft";
-    static { System.loadLibrary("gdhub_loader"); }
-    private native String nativeRunPackage(String absolutePath);
 
     private int dp(int n){return (int)(n*getResources().getDisplayMetrics().density+0.5f);}
     private GradientDrawable box(int color,int radius){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(dp(radius));return d;}
@@ -291,5 +289,5 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void runPackage(File file){try{status.setText(nativeRunPackage(file.getAbsolutePath()));}catch(Throwable e){status.setText("Erro no runtime nativo: "+e.getMessage());}}
+    private void runPackage(File file){try{status.setText(GdHubRuntime.nativeRunPackage(file.getAbsolutePath()));}catch(Throwable e){status.setText("Erro no runtime nativo: "+e.getMessage());}}
 }
