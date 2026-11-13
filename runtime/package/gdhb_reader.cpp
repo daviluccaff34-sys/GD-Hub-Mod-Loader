@@ -67,8 +67,8 @@ bool GdhbReader::inspect(const std::string& file_path, PackageInfo& out_info) co
     out_info = {};
     std::ifstream in(file_path, std::ios::binary | std::ios::ate);
     if (!in) { m_error = "Não foi possível abrir o pacote."; return false; }
-    const auto length = in.tellg();
-    if (length < 8 || static_cast<std::uint64_t>(length) > kMaxPackageBytes) {
+    const std::streamoff file_size = static_cast<std::streamoff>(in.tellg());
+    if (file_size < 8 || static_cast<std::uint64_t>(file_size) > kMaxPackageBytes) {
         m_error = "Tamanho de pacote inválido (limite: 16 MiB)."; return false;
     }
     in.seekg(0);
@@ -92,7 +92,7 @@ bool GdhbReader::inspect(const std::string& file_path, PackageInfo& out_info) co
             m_error = "Entrada GDHB inválida."; return false;
         }
         total += 6u + path_size + data_size;
-        if (total > static_cast<std::uint64_t>(length)) { m_error = "Pacote truncado."; return false; }
+        if (total > static_cast<std::uint64_t>(file_size)) { m_error = "Pacote truncado."; return false; }
         std::string path(path_size, '\0');
         std::string data(data_size, '\0');
         if (!in.read(path.data(), path_size) || !in.read(data.data(), data_size)) {
