@@ -33,6 +33,66 @@ def tool(name: str, override: str | None = None) -> str:
     return candidate
 
 
+def inject_startup_library_load(decoded: Path) -> None:
+    """Load the bundled GD Hub library in the Geometry Dash process."""
+    matches = []
+    for folder in decoded.glob("smali*"):
+        candidate = folder / "com" / "robtopx" / "geometryjump" / "GeometryJump.smali"
+        if candidate.is_file():
+            matches.append(candidate)
+    if len(matches) != 1:
+        raise RuntimeError("Não foi possível identificar exatamente uma classe GeometryJump.smali.")
+
+    path = matches[0]
+    source = path.read_text(encoding="utf-8")
+    method_match = re.search(
+        r"(?m)^\.method[^\n]* onCreate\(Landroid/os/Bundle;\)V\s*\n", source
+    )
+    if not method_match:
+        raise RuntimeError("GeometryJump.onCreate(Bundle) não foi encontrado.")
+    method_end = source.find(".end method", method_match.end())
+    if method_end < 0:
+        raise RuntimeError("Método GeometryJump.onCreate está incompleto.")
+    block = source[method_match.start():method_end]
+    if '"gdhub_loader"' in block:
+        return
+
+    locals_match = re.search(r"(?m)^\s*\.locals\s+(\d+)\s*$", block)
+    registers_match = re.search(r"(?m)^\s*\.registers\s+(\d+)\s*$", block)
+    if locals_match:
+        local_register = int(locals_match.group(1))
+        block = block[:locals_match.start()] + re.sub(
+            r"(\.locals\s+)\d+",
+            lambda m: m.group(1) + str(local_register + 1),
+            block[locals_match.start():locals_match.end()],
+        ) + block[locals_match.end():]
+    elif registers_match:
+        register_count = int(registers_match.group(1))
+        local_register = register_count - 2
+        if local_register < 0:
+            raise RuntimeError("Contagem de registradores smali inválida.")
+        block = block[:registers_match.start()] + re.sub(
+            r"(\.registers\s+)\d+",
+            lambda m: m.group(1) + str(register_count + 1),
+            block[registers_match.start():registers_match.end()],
+        ) + block[registers_match.end():]
+    else:
+        raise RuntimeError("onCreate não declara .locals nem .registers.")
+
+    super_call = re.search(
+        r"(?m)^\s*invoke-super[^\n]*->onCreate\(Landroid/os/Bundle;\)V[^\n]*$", block
+    )
+    if not super_call:
+        raise RuntimeError("Chamada original de onCreate não foi encontrada; APK não foi alterado.")
+    insertion = (
+        f'\n    const-string v{local_register}, "gdhub_loader"'
+        f'\n    invoke-static {{v{local_register}}}, Ljava/lang/System;->loadLibrary(Ljava/lang/String;)V'
+    )
+    block = block[:super_call.end()] + insertion + block[super_call.end():]
+    source = source[:method_match.start()] + block + source[method_end:]
+    path.write_text(source, encoding="utf-8")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", required=True, type=Path, help="APK original")
@@ -93,6 +153,7 @@ def main() -> int:
             raise RuntimeError("Elemento application ausente no Manifest.")
         app.set(ANDROID_NS + "label", args.label)
         tree.write(manifest, encoding="utf-8", xml_declaration=True)
+        inject_startup_library_load(decoded)
 
         # Inject only the ABI-matching native binary. Never copy ARM64 into ARM32 or vice versa.
         for abi, source in (("arm64-v8a", args.lib_arm64), ("armeabi-v7a", args.lib_arm32)):
