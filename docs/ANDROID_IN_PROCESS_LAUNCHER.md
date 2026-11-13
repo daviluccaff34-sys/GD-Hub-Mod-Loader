@@ -1,49 +1,43 @@
-# Android in-process game launcher — implementation plan
+# Android in-process game launcher
 
-## Correct target identification
+## Target version
 
-The Geode Android Launcher maps Android `versionCode 41` to the unified Geometry Dash version `2.2081`. The installed APK's `versionName` may be `2.2.144`; this is not evidence that it is the wrong target. GD Hub's package probe now records both the manifest version and the mapped Geometry Dash version.
+The Geode Android Launcher maps Android package `versionCode 41` to unified Geometry Dash `2.2081`. The manifest `versionName` may be `2.2.144`; GD Hub uses the version code mapping rather than that display string.
 
-## Correct execution model
+## Architecture implemented in GD Hub
 
-GD Hub must not start the separate Geometry Dash activity with an Intent, and it must not try to draw the game inside a WebView or virtual machine.
+The launcher does not start the separate Geometry Dash Activity. It hosts the game engine in `GeometryDashActivity`, an Activity declared in the GD Hub manifest and running in the GD Hub process.
 
-The Geode Android launcher uses its own game Activity inside the launcher APK. That Activity adds the installed game's APK assets to the host AssetManager, resolves the correct ABI libraries, initializes FMOD, loads FMOD before Cocos2d-x, initializes the Cocos helper and OpenGL surface, applies its version-specific compatibility/data-path fixes, and only then loads the mod framework. GD Hub will implement the same execution sequence with its own Activity and runtime bridge. The original Geometry Dash package remains installed; the game engine is hosted by GD Hub's Activity.
+Current executable pieces:
 
-Reference implementation studied:
-- https://github.com/geode-sdk/android-launcher
-- app/src/main/java/com/geode/launcher/GeometryDashActivity.kt
-- app/src/main/java/org/cocos2dx/lib/
-- app/src/main/cpp/launcher-fix.cpp
+- `GeometryDashActivity` reads the installed Geometry Dash package, adds its base and split APK assets to the host AssetManager, and resolves the device process ABI.
+- It extracts or copies `libfmod.so` and `libcocos2dcpp.so` into GD Hub's private directory, then loads FMOD first and Cocos2d-x second.
+- The adapted Kotlin bridge preserves the JNI package/class names expected by Geometry Dash: `org.cocos2dx.lib`, `org.fmod`, and `com.customRobTop.JniToCpp`.
+- `Cocos2dxGLSurfaceView` creates an OpenGL ES 2 surface and forwards touch and key events to the Cocos renderer.
+- `Cocos2dxRenderer` calls the game's native initialization after the GL surface receives its size, then asks `GdHubRuntime` to inspect the already-loaded Cocos runtime.
+- `LauncherFix` ports Geode's Android path redirection and compatibility patcher. It redirects the game's old `/data/data/com.robtopx.geometryjump` paths to GD Hub's private save directory and enables the exception-symbol patch for version codes 39 and newer.
+- `FMOD` lifecycle and the Cocos accelerometer helper are connected to the Activity lifecycle.
+- A GD Hub floating button is layered over the game at the lower-right. It opens the installed `.gdhb` list and can run a package through the native DashCode interpreter, showing its output in the panel.
 
-## GD Hub status
+## Loading order
 
-The current GD Hub companion app is Java-only and its native CMake target builds libgdhub_loader.so. It does not yet include the Cocos2d-x Java bridge classes, FMOD Java bridge, game Activity, asset redirection, or verified native startup sequence. Therefore it cannot honestly claim to host Geometry Dash yet.
+1. Add Geometry Dash base/split APK assets to the host AssetManager.
+2. Initialize FMOD's Android bridge.
+3. Initialize the Cocos helper and its writable save path.
+4. Load `libfmod.so`.
+5. Load `libcocos2dcpp.so`.
+6. Configure and execute `LauncherFix` while the game library is loaded.
+7. Set the APK path and HSS asset paths expected by Geometry Dash.
+8. Create the OpenGL surface; its renderer calls the game's native Cocos initialization.
+9. After native initialization, load `libgdhub_loader.so` on demand and inspect the loaded Cocos symbols.
+10. Show the GD Hub overlay and execute selected `.gdhb` packages through the interpreter.
 
-## Implemented first step
+## Important remaining work
 
-GameInstallProbe performs read-only package inspection for com.robtopx.geometryjump. It reports:
-- installed version name and version code;
-- installed base APK path;
-- native library directory;
-- split APK paths, if present;
-- device-supported ABIs.
+The current overlay is a real Android view layered above the game, not yet a Cocos scene node. The DashCode interpreter currently implements text output, variables, conditions and repeat blocks; it does not yet expose Geometry Dash scene mutation, triggers, editor objects, or a Cocos UI API. Therefore a package can execute and display interpreter output, but it cannot yet change Geometry Dash's actual scene or gameplay.
 
-It does not copy or alter the installed game.
+The code has not yet been installed and tested on a physical Android device. CI builds are necessary but do not prove that the installed Geometry Dash binary starts successfully on a phone. Device testing must verify the exact game build, ARM ABI, native library load, asset access, save path, touch input, audio and pause/resume lifecycle before claiming full compatibility.
 
-## Remaining integration milestones
+## Upstream source and license
 
-1. Add a dedicated GeometryDashActivity declared in the GD Hub manifest.
-2. Integrate a compatible Cocos2d-x Android Java bridge and FMOD Java bridge, with their licenses and exact upstream revisions recorded.
-3. Initialize Cocos and FMOD from the dedicated Activity.
-4. Resolve base/split APK assets and native library locations for the installed package.
-5. Load the game libraries in the correct dependency order and verify both ARM32 and ARM64.
-6. Implement and test the version-specific native compatibility layer.
-7. Load libgdhub_loader.so only after the game engine is initialized, then verify a harmless in-game UI test.
-8. Add lifecycle handling for pause/resume, audio focus, back button, rotation and process termination.
-
-Do not replace step 2 with empty placeholder Cocos classes: the game's native library calls into the Java bridge through JNI, so fake stubs would only produce runtime crashes.
-
-## GD Hub porting strategy
-
-Use the Geode launcher as the technical reference, not as a separate app to launch. Implement GD Hub-owned classes for the host Activity, Cocos JNI bridge, FMOD bridge, APK/split asset resolver, native library resolver, lifecycle, and save-path handling. Preserve the native JNI class names/signatures expected by Geometry Dash where interoperability requires them. Load `libgdhub_loader.so`'s game-attachment entry point only after the Cocos game libraries are initialized. Keep the existing `.gdhb` package interpreter and manager UI in GD Hub. Do not create placeholder Cocos classes or claim runtime support before a device test.
+The Kotlin Cocos/FMOD bridge and native path patcher are adapted from the Geode Android Launcher revision `9e136f728d35bdd60b8e66f382e0d1e405376854`. Their Boost Software License 1.0 is included in `third_party/geode/LICENSE.txt`, and adapted files are listed in `THIRD_PARTY_NOTICES.md`.
