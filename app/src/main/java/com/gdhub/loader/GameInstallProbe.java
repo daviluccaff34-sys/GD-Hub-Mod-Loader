@@ -5,6 +5,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.os.Build;
 import java.io.File;
+import java.util.zip.ZipFile;
 
 /** Read-only inspection of the installed Geometry Dash package. */
 public final class GameInstallProbe {
@@ -61,6 +62,32 @@ public final class GameInstallProbe {
             case 43: return "2.2091";
             default: return fallback;
         }
+    }
+
+    /** Checks that both required game libraries exist for the host process ABI. */
+    public static boolean hasGameLibraries(Result result, String abi) {
+        if (result == null || !result.installed || abi == null) return false;
+        String[] names = {"libfmod.so", "libcocos2dcpp.so"};
+        String[] apkPaths = new String[1 + result.splitApks.length];
+        apkPaths[0] = result.sourceApk;
+        System.arraycopy(result.splitApks, 0, apkPaths, 1, result.splitApks.length);
+        for (String name : names) {
+            boolean found = result.nativeLibraryDir != null
+                && new File(result.nativeLibraryDir, name).isFile();
+            if (!found) {
+                for (String apkPath : apkPaths) {
+                    if (apkPath == null || apkPath.isEmpty()) continue;
+                    try (ZipFile zip = new ZipFile(apkPath)) {
+                        if (zip.getEntry("lib/" + abi + "/" + name) != null) {
+                            found = true;
+                            break;
+                        }
+                    } catch (Exception ignored) { }
+                }
+            }
+            if (!found) return false;
+        }
+        return true;
     }
 
     public static boolean hasNativeLibraryDirectory(Result result) {
