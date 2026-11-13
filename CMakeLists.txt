@@ -8,6 +8,7 @@ add_library(gdhub_loader SHARED
     loader/core/loader.cpp
     runtime/package/gdhb_reader.cpp
     runtime/language/dash_interpreter.cpp
+    runtime/mod_runtime.cpp
 )
 target_include_directories(gdhub_loader PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 if(ANDROID)
