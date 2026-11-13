@@ -31,7 +31,7 @@ GameUiRenderPlan build_game_ui_render_plan(
     plan.items.push_back(item(UiDrawKind::Launcher, layout.floating_button,
                               kNavy, kCyan, 2.5f, layout.floating_button.width * 0.5f,
                               "GD", 15.0f, panel_open));
-    plan.hit_targets.push_back({UiHitAction::OpenPanel, layout.floating_button, {}});
+    plan.hit_targets.push_back({UiHitAction::TogglePanel, layout.floating_button, {}});
 
     if (!panel_open) return plan;
 
@@ -39,7 +39,7 @@ GameUiRenderPlan build_game_ui_render_plan(
     const float scale = std::max(0.5f, std::min(2.0f, panel.width / 560.0f));
     const float pad = 14.0f * scale;
     const float header_h = std::min(54.0f * scale, panel.height * 0.22f);
-    const float close_size = std::min(30.0f * scale, header_h - 8.0f * scale);
+    const float close_size = std::max(0.0f, std::min(30.0f * scale, header_h - 8.0f * scale));
 
     plan.items.push_back(item(UiDrawKind::Panel, panel, kNavy, kCyan, 2.5f,
                               12.0f * scale));
@@ -113,6 +113,19 @@ GameUiRenderPlan build_game_ui_render_plan(
     }
 
     return plan;
+}
+
+std::optional<UiHitTarget> hit_test_game_ui(
+    const GameUiRenderPlan& plan, float x, float y) {
+    for (auto it = plan.hit_targets.rbegin(); it != plan.hit_targets.rend(); ++it) {
+        const Rect& bounds = it->bounds;
+        if (bounds.width <= 0.0f || bounds.height <= 0.0f) continue;
+        if (x >= bounds.x && x <= bounds.x + bounds.width &&
+            y >= bounds.y && y <= bounds.y + bounds.height) {
+            return *it;
+        }
+    }
+    return std::nullopt;
 }
 
 } // namespace gdhub::game
