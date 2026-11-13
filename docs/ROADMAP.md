@@ -22,7 +22,7 @@
 ## 0.2.0 — Android runtime and game integration
 - [ ] Build reproducible ARM32 and ARM64 Android artifacts with the NDK
 - [ ] Run and validate the companion APK on a physical device
-- [ ] Define a version-specific integration boundary for Geometry Dash 2.2081
+- [x] Document the version-specific integration boundary and staged plan for Geometry Dash 2.2081
 - [ ] Add a safe bridge between a verified in-game component and the runtime
 - [ ] Define package permissions and enforce them in the runtime
 - [ ] Add runtime API for supported game actions
