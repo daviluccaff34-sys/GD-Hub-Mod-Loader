@@ -91,3 +91,18 @@ Both native libraries export `JNI_OnLoad` and Cocos renderer JNI functions inclu
 `CCSceneDelegate::willSwitchToScene(CCScene*)` appears as a **weak** dynamic symbol with a very small symbol size in both uploaded libraries (4 bytes in ARM64 and 2 bytes in ARM32). This is not evidence of a usable scene hook. Do not patch or replace it based on the symbol name alone.
 
 The verified exported Cocos functions are useful for compatibility research, but their presence does not prove a safe initialization point, thread context, ownership rules, or ABI-compatible C++ declarations. No native function is called by the current symbol probe.
+
+## Native dependency profile
+
+Both ABI variants of `libcocos2dcpp.so` declare these dynamic dependencies:
+
+- `libfmod.so`
+- `libGLESv2.so`
+- `liblog.so`
+- `libz.so`
+- `libdl.so`
+- `libstdc++.so`
+- `libm.so`
+- `libc.so`
+
+The APK contains only the two inspected game-native libraries per ABI: `libcocos2dcpp.so` and `libfmod.so`. The game library depends on the matching FMOD library, so a future clone/repack must preserve the pair and each ABI directory. This is an archive observation, not a recommendation to replace either library.
