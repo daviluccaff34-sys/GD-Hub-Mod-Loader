@@ -116,7 +116,7 @@ public class MainActivity extends Activity {
     }
 
     private void scanPackages() {
-        root.removeViews(4, Math.max(0, root.getChildCount() - 4));
+        root.removeViews(5, Math.max(0, root.getChildCount() - 5));
         packages.clear();
         File dir = new File(getFilesDir(), "mods");
         File[] found = dir.listFiles((d, name) -> name.toLowerCase().endsWith(".gdhb"));
