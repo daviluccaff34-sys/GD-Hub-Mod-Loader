@@ -52,3 +52,18 @@
 ## Geometry Dash APK identity warning
 
 Geode Android Launcher's version map identifies Android `versionCode 41` as Geometry Dash `2.2081`. The Android manifest's `versionName` may show `2.2.144`; use the version-code mapping, not that string alone, for target identification.
+
+
+## GD Hub Mod Creator — First Release preparation (13 Nov 2026)
+- [x] Add searchable independent DashPT code-piece library (3,420 fragments; not Scratch blocks).
+- [x] Add JavaScript extension API to register, search, retrieve and insert code fragments.
+- [x] Add construction draft editor for objects, groups, triggers, properties and removal by ID.
+- [x] Export construction draft as `level/build.json` and publish its JSON schema.
+- [x] Add Studio catalog page to list approved mods, submit GDHB packages, download approved packages and moderate pending submissions.
+- [ ] Connect the Studio to the actual deployed Worker URL and verify CORS from the Pages domain.
+- [ ] Add/configure `ADMIN_TOKEN` secret and test real moderation end-to-end.
+- [ ] Implement native runtime parsing for `level/build.json`, object/group/trigger actions and safe permission enforcement.
+- [ ] Implement verified Cocos2d-x adapter for Geometry Dash 2.2081.
+- [ ] Run browser tests, native CI, Android build and physical-device validation before declaring version 1.00.0 released.
+
+The code-piece and construction editors are authoring/export tools. They do not imply that all tokens are executable game functions. Native game integration remains a separate unfinished milestone.
