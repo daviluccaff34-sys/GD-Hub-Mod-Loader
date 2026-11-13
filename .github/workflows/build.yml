@@ -10,6 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check packager syntax
+        run: python -m py_compile packager/gdhb_pack.py
+      - name: Package example mod
+        run: python packager/gdhb_pack.py --manifest examples/hello_dash/manifest.json --source examples/hello_dash/main.dash --output /tmp/hello-dash.gdhb
       - name: Configure
         run: cmake -S . -B build -DBUILD_TESTING=ON
       - name: Build
@@ -38,6 +45,11 @@ jobs:
           -DBUILD_TESTING=OFF
       - name: Build Android library
         run: cmake --build build-android --parallel 2
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GD-Hub-native-${{ matrix.abi }}
+          path: build-android/libgdhub_loader.so
+          if-no-files-found: error
 
   android-app:
     runs-on: ubuntu-latest
