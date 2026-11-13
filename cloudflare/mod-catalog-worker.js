@@ -65,39 +65,34 @@ function validateGdhb(bytes) {
   return manifest;
 }
 
-async function listApproved(bucket) {
+async function listByStatus(kv, status) {
   const mods = [];
   let cursor;
   do {
-    const page = await bucket.list({ prefix: "metadata/", limit: 1000, cursor });
-    for (const item of page.objects) {
-      const object = await bucket.get(item.key);
-      if (!object) continue;
-      try {
-        const meta = await object.json();
-        if (meta.status === "approved") mods.push({
-          id: meta.id, name: meta.name, version: meta.version,
-          author: meta.author, description: meta.description,
-          fileSize: meta.fileSize, publishedAt: meta.publishedAt,
-          downloads: meta.downloads || 0
-        });
-      } catch { /* Ignore malformed catalog entries. */ }
+    const page = await kv.list({ prefix: "meta:", limit: 1000, cursor });
+    for (const key of page.keys) {
+      const meta = await kv.get(key.name, { type: "json" });
+      if (meta && meta.status === status) mods.push(meta);
     }
-    cursor = page.truncated ? page.cursor : undefined;
+    cursor = page.list_complete ? undefined : page.cursor;
   } while (cursor && mods.length < 500);
-  mods.sort((a, b) => String(b.publishedAt).localeCompare(String(a.publishedAt)));
-  return mods.slice(0, 500);
+  return mods;
 }
 
 export default {
   async fetch(request, env) {
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: CORS });
-    if (!env.MODS_BUCKET) return json({ error: "R2 binding MODS_BUCKET is not configured." }, 503);
+    if (!env.MODS) return json({ error: "KV binding MODS is not configured." }, 503);
     const url = new URL(request.url);
     const path = url.pathname.replace(/\/+$/, "") || "/";
 
     if (request.method === "GET" && path === "/v1/mods") {
-      return json({ mods: await listApproved(env.MODS_BUCKET) });
+      const mods = await listByStatus(env.MODS, "approved");
+      mods.sort((a, b) => String(b.publishedAt).localeCompare(String(a.publishedAt)));
+      return json({ mods: mods.slice(0, 500).map(m => ({
+        id: m.id, name: m.name, version: m.version, author: m.author,
+        description: m.description, fileSize: m.fileSize, publishedAt: m.publishedAt
+      })) });
     }
 
     if (request.method === "POST" && path === "/v1/mods") {
@@ -119,69 +114,47 @@ export default {
       try { manifest = validateGdhb(bytes); } catch (error) { return json({ error: error.message }, 400); }
       const id = crypto.randomUUID();
       const publishedAt = new Date().toISOString();
-      const filename = "mods/" + id + ".gdhb";
       const metadata = {
         id, name, version, author, description, status: "pending",
         fileName: clean(file.name, 100) || "mod.gdhb",
         fileSize: file.size, publishedAt,
-        manifestId: manifest.id, manifestName: manifest.name, manifestVersion: manifest.version,
-        downloads: 0
+        manifestId: manifest.id, manifestName: manifest.name, manifestVersion: manifest.version
       };
-      await env.MODS_BUCKET.put(filename, bytes, {
-        httpMetadata: { contentType: "application/octet-stream" },
-        customMetadata: { id, status: "pending" }
-      });
-      await env.MODS_BUCKET.put("metadata/" + id + ".json", JSON.stringify(metadata), {
-        httpMetadata: { contentType: "application/json; charset=utf-8" }
-      });
+      // KV supports binary ArrayBuffer values; GDHB's 16 MiB cap stays below KV's 25 MiB value limit.
+      await env.MODS.put("file:" + id, bytes);
+      await env.MODS.put("meta:" + id, JSON.stringify(metadata));
       return json({ id, status: "pending", message: "Mod enviado para revisão." }, 201);
     }
 
     const downloadMatch = path.match(/^\/v1\/mods\/([0-9a-f-]+)\/download$/i);
     if (request.method === "GET" && downloadMatch) {
       const id = downloadMatch[1];
-      const metaObject = await env.MODS_BUCKET.get("metadata/" + id + ".json");
-      if (!metaObject) return json({ error: "Mod não encontrado." }, 404);
-      const meta = await metaObject.json();
-      if (meta.status !== "approved") return json({ error: "Mod ainda não foi aprovado." }, 404);
-      const object = await env.MODS_BUCKET.get("mods/" + id + ".gdhb");
-      if (!object) return json({ error: "Arquivo do mod não encontrado." }, 404);
+      const meta = await env.MODS.get("meta:" + id, { type: "json" });
+      if (!meta || meta.status !== "approved") return json({ error: "Mod não encontrado ou ainda não aprovado." }, 404);
+      const bytes = await env.MODS.get("file:" + id, { type: "arrayBuffer" });
+      if (!bytes) return json({ error: "Arquivo do mod não encontrado." }, 404);
       const headers = new Headers(CORS);
-      object.writeHttpMetadata(headers);
       headers.set("Content-Type", "application/octet-stream");
       headers.set("Content-Disposition", 'attachment; filename="' + id + '.gdhb"');
       headers.set("Cache-Control", "public, max-age=300");
-      return new Response(object.body, { headers });
+      return new Response(bytes, { headers });
     }
 
     const admin = request.headers.get("Authorization") || "";
     if (!env.ADMIN_TOKEN || admin !== "Bearer " + env.ADMIN_TOKEN) return json({ error: "Não encontrado." }, 404);
 
     if (request.method === "GET" && path === "/admin/pending") {
-      const pending = [];
-      let cursor;
-      do {
-        const page = await env.MODS_BUCKET.list({ prefix: "metadata/", limit: 1000, cursor });
-        for (const item of page.objects) {
-          const object = await env.MODS_BUCKET.get(item.key);
-          if (!object) continue;
-          try { const meta = await object.json(); if (meta.status === "pending") pending.push(meta); } catch {}
-        }
-        cursor = page.truncated ? page.cursor : undefined;
-      } while (cursor && pending.length < 500);
-      return json({ pending });
+      return json({ pending: await listByStatus(env.MODS, "pending") });
     }
 
     const approveMatch = path.match(/^\/admin\/approve\/([0-9a-f-]+)$/i);
     if (request.method === "POST" && approveMatch) {
       const id = approveMatch[1];
-      const key = "metadata/" + id + ".json";
-      const object = await env.MODS_BUCKET.get(key);
-      if (!object) return json({ error: "Mod não encontrado." }, 404);
-      const meta = await object.json();
+      const meta = await env.MODS.get("meta:" + id, { type: "json" });
+      if (!meta) return json({ error: "Mod não encontrado." }, 404);
       meta.status = "approved";
       meta.approvedAt = new Date().toISOString();
-      await env.MODS_BUCKET.put(key, JSON.stringify(meta), { httpMetadata: { contentType: "application/json; charset=utf-8" } });
+      await env.MODS.put("meta:" + id, JSON.stringify(meta));
       return json({ id, status: "approved" });
     }
 
