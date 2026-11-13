@@ -246,6 +246,11 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
         super.onPause()
     }
 
+    @Deprecated("Deprecated in Android API")
+    override fun onBackPressed() {
+        if (::gameView.isInitialized) gameView.sendKeyBack() else super.onBackPressed()
+    }
+
     override fun onDestroy() {
         runCatching { FMOD.close() }
         Cocos2dxHostContext.current = null
