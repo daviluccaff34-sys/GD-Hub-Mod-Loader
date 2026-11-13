@@ -99,6 +99,7 @@ class Cocos2dxRenderer(private var handler: Cocos2dxGLSurfaceView) : GLSurfaceVi
     }
 
     override fun onSurfaceCreated(gl10: GL10?, eglConfig: EGLConfig?) {
+        nativeInitialized = false
         lastTickInNanoSeconds = System.nanoTime()
     }
 
