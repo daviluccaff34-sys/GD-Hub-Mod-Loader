@@ -75,7 +75,7 @@ jobs:
         with:
           gradle-version: '8.9'
       - name: Build companion APK
-        run: gradle assembleDebug
+        run: gradle assembleDebug -PgdhubPublishApi=https://gdhub-mod-catalog.daviluccaff34.workers.dev
       - uses: actions/upload-artifact@v4
         with:
           name: GD-Hub-Android-APK
