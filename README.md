@@ -11,6 +11,7 @@ Independent Android mod-loader research project for Geometry Dash **2.2081**.
 ## Current prototype
 - DashCode interpreter with variables, output, arithmetic addition, conditions, loops and text interpolation.
 - GDHB v1 reader with file-size bounds, safe-path checks, duplicate detection and required-file validation.
+- ModRuntime connects the package reader to the DashCode interpreter, running src/main.dash in memory.
 - Python packager at packager/gdhb_pack.py.
 - Native tests run through CMake/CTest and GitHub Actions.
 
