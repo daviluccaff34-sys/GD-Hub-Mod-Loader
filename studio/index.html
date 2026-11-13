@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090b18"><title>GD Hub Mod Studio</title>
+<style>
+:root{color-scheme:dark;--bg:#090b18;--panel:#11162a;--panel2:#171e36;--line:#293252;--text:#f4f6ff;--muted:#a8b2d1;--cyan:#67e8f9;--purple:#9b87ff;--pink:#ff80c8}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% 0%,#30235c 0,transparent 40%),var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+header{padding:28px max(20px,calc((100% - 1050px)/2));border-bottom:1px solid var(--line);background:#090b18bb}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,var(--purple),var(--cyan));display:grid;place-items:center;color:#090b18;font-weight:1000;font-size:22px}
+h1{font-size:clamp(25px,5vw,38px);margin:20px 0 5px;line-height:1.1}h2{font-size:18px;margin:0 0 14px}p{color:var(--muted);margin:5px 0}
+main{max-width:1050px;margin:25px auto;padding:0 18px 50px;display:grid;grid-template-columns:1.2fr .8fr;gap:18px}
+.panel{background:linear-gradient(180deg,#151b31,#101528);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 15px 50px #0003}
+.full{grid-column:1/-1}.field{display:grid;gap:6px;margin:13px 0}.field label{font-size:13px;color:#cbd4f1;font-weight:700}
+input,textarea,select{width:100%;background:#090f20;border:1px solid #354064;color:var(--text);padding:12px;border-radius:10px;font:inherit;outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--cyan)}textarea{min-height:170px;resize:vertical;font:13px/1.5 ui-monospace,monospace}
+button{border:0;border-radius:11px;padding:12px 17px;background:linear-gradient(100deg,var(--purple),var(--cyan));color:#08101d;font-weight:900;font-size:14px;cursor:pointer}
+button.secondary{background:#242d4a;color:var(--text);border:1px solid #3a466c}button:disabled{opacity:.5;cursor:not-allowed}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}.hint{font-size:12px;color:var(--muted)}.status{margin-top:13px;padding:12px;border:1px solid var(--line);border-radius:10px;color:#b9f7e8;background:#0c2527;white-space:pre-wrap}
+.template{display:flex;gap:10px;align-items:flex-start;background:#0c1224;border:1px solid var(--line);padding:13px;border-radius:12px;margin:9px 0}
+.template input{width:auto;margin-top:5px}.tag{font-size:11px;color:var(--cyan);border:1px solid #3d6072;border-radius:20px;padding:2px 8px}
+.preview{background:#080d1b;border:1px dashed #47557c;border-radius:12px;padding:14px;min-height:90px;white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.5 ui-monospace,monospace}
+footer{text-align:center;padding:25px;color:var(--muted);font-size:12px;border-top:1px solid var(--line)}
+@media(max-width:760px){main{grid-template-columns:1fr}.full{grid-column:auto}header{padding:22px 18px}}
+</style></head>
+<body>
+<header><div class="brand"><div class="logo">GD</div><div><strong>GD HUB</strong><div class="hint">MOD STUDIO · CRIADOR DE PACOTES</div></div></div><h1>Crie seu próximo mod.</h1><p>Monte a estrutura, edite o código e gere um arquivo .gdhb direto no navegador.</p></header>
+<main>
+<section class="panel">
+<h2>01 · Informações do mod</h2>
+<div class="field"><label for="name">Nome</label><input id="name" maxlength="64" value="Meu primeiro mod"></div>
+<div class="field"><label for="id">ID único (use letras, números, ponto, hífen ou _)</label><input id="id" maxlength="80" value="meuprimeiromod"></div>
+<div class="field"><label for="version">Versão</label><input id="version" maxlength="32" value="1.0.0"></div>
+<div class="field"><label for="author">Autor</label><input id="author" maxlength="48" placeholder="Seu nome ou apelido"></div>
+<div class="field"><label for="description">Descrição</label><input id="description" maxlength="500" value="Criado com GD Hub Mod Studio."></div>
+</section>
+<section class="panel">
+<h2>02 · Modelo inicial</h2>
+<label class="template"><input type="radio" name="template" value="basic" checked><span><strong>Mod básico</strong><br><span class="hint">Estrutura simples para começar a programar.</span></span></label>
+<label class="template"><input type="radio" name="template" value="icons"><span><strong>More Icons</strong> <span class="tag">MODELO</span><br><span class="hint">Projeto de ícones personalizados e combinações visuais.</span></span></label>
+<div class="field"><label for="extra">Arquivos de imagem (opcional)</label><input id="extra" type="file" accept="image/png,image/webp,image/jpeg" multiple></div>
+<p class="hint">As imagens serão incluídas em assets/icons/. Limite total do pacote: 16 MiB.</p>
+</section>
+<section class="panel full">
+<h2>03 · Código principal (src/main.dash)</h2>
+<textarea id="source" spellcheck="false"># Meu primeiro mod
+# Comece seu código DashCode aqui.
+Speak("Meu mod foi carregado!")</textarea>
+<div class="actions"><button class="secondary" id="reset">Restaurar modelo</button><button id="build">Validar e gerar .gdhb</button></div>
+<div id="status" class="status" role="status">Preencha os dados e gere seu pacote. O arquivo é montado localmente no seu dispositivo.</div>
+</section>
+<section class="panel full">
+<h2>04 · Prévia da estrutura</h2><div class="preview" id="tree">manifest.json
+src/
+  main.dash
+assets/
+  icons/</div>
+<p class="hint">O pacote usa GDHB v1: cabeçalho binário, manifesto JSON, código-fonte e recursos. Isso é empacotamento/validação, não compilação de código nativo.</p>
+</section>
+</main>
+<footer>GD Hub Mod Studio · Projeto comunitário · Os arquivos são processados localmente no navegador.</footer>
+<script>
+const $=id=>document.getElementById(id);
+const templates={
+basic:'# Meu primeiro mod\n# Comece seu código DashCode aqui.\nSpeak("Meu mod foi carregado!")',
+icons:'# More Icons — projeto de ícones\n# Este pacote é um ponto de partida para recursos visuais.\n# Combinações são apenas visuais e pertencem ao jogador.\n# A integração com a tela de seleção de ícones do jogo ainda precisa ser implementada no GD Hub.\nSpeak("More Icons: pacote carregado!")'
+};
+function selected(){return document.querySelector('input[name="template"]:checked').value}
+function resetSource(){$('source').value=templates[selected()]}
+document.querySelectorAll('input[name="template"]').forEach(x=>x.addEventListener('change',resetSource));
+$('reset').addEventListener('click',resetSource);
+function enc(s){return new TextEncoder().encode(s)}
+function u16(n){return [n&255,(n>>>8)&255]}
+function u32(n){return [n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255]}
+function concat(chunks){let size=chunks.reduce((n,c)=>n+c.length,0),out=new Uint8Array(size),p=0;for(const c of chunks){out.set(c,p);p+=c.length}return out}
+function entry(path,data){const p=enc(path),d=data instanceof Uint8Array?data:enc(data);if(p.length<1||p.length>240||d.length>4*1024*1024)throw Error('Arquivo fora do limite: '+path);return concat([new Uint8Array([...u16(p.length),...u32(d.length)]),p,d])}
+function safeId(s){return /^[a-zA-Z0-9._-]+$/.test(s)&&s.length>0}
+function show(msg,ok){$('status').textContent=msg;$('status').style.color=ok?'#b9f7e8':'#ffb4c2'}
+$('build').addEventListener('click',async()=>{
+try{
+const name=$('name').value.trim(),id=$('id').value.trim(),version=$('version').value.trim(),author=$('author').value.trim(),description=$('description').value.trim(),source=$('source').value;
+if(!name||!safeId(id)||!version||!author||!description)throw Error('Confira nome, ID, versão, autor e descrição. O ID só pode ter letras, números, ponto, hífen e _.');
+if(!source.trim())throw Error('O arquivo main.dash não pode ficar vazio.');
+const manifest={id,name,version,author,description,entry:"src/main.dash",type:selected()==='icons'?'visual-icons':'script',createdWith:"GD Hub Mod Studio"};
+const files=[entry('manifest.json',JSON.stringify(manifest,null,2)),entry('src/main.dash',source)];
+const uploads=[...$('extra').files];
+for(const f of uploads){if(!/^image\/(png|webp|jpeg)$/.test(f.type))throw Error('Formato de imagem não aceito: '+f.name);const bytes=new Uint8Array(await f.arrayBuffer());files.push(entry('assets/icons/'+f.name.replace(/[^a-zA-Z0-9._-]/g,'_'),bytes))}
+if(files.length>128)throw Error('Limite de 128 arquivos excedido.');
+const packageBytes=concat([enc('GDHB'),new Uint8Array([...u16(1),...u16(files.length)]),...files]);
+if(packageBytes.length>16*1024*1024)throw Error('Pacote maior que 16 MiB.');
+const blob=new Blob([packageBytes],{type:'application/octet-stream'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=id+'.gdhb';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+show('Pacote gerado!\n'+id+'.gdhb · '+(packageBytes.length/1024).toFixed(1)+' KiB\n'+files.length+' arquivos incluídos.\nImportante: o pacote foi validado e empacotado; recursos de gameplay ainda dependem de suporte no runtime do GD Hub.',true);
+$('tree').textContent='manifest.json\nsrc/\n  main.dash\n'+(uploads.length?'assets/\n  icons/\n'+uploads.map(f=>'    '+f.name).join('\n'):'assets/ (vazio)');
+}catch(e){show('Não foi possível gerar o pacote: '+e.message,false)}
+});
+</script></body></html>
