@@ -238,6 +238,28 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
                 setPadding(dp(9), dp(8), dp(9), dp(8))
                 background = rounded(Color.rgb(39, 37, 56), 10)
             }
+            val runButton = Button(this).apply {
+                text = "Executar pacote"
+                isEnabled = prefs.getBoolean(file.name, false) && runtimeReady
+                alpha = if (isEnabled) 1f else 0.45f
+                setOnClickListener {
+                    if (!prefs.getBoolean(file.name, false)) {
+                        output.text = "Ative este pacote antes de executar."
+                    } else {
+                        isEnabled = false
+                        output.text = "Executando ${file.name}…"
+                        Thread {
+                            val result = runCatching {
+                                GdHubRuntime.nativeRunPackage(file.absolutePath)
+                            }.getOrElse { "Falha no runtime: ${it.message}" }
+                            runOnUiThread {
+                                output.text = result
+                                isEnabled = prefs.getBoolean(file.name, false) && runtimeReady
+                            }
+                        }.start()
+                    }
+                }
+            }
             val enabled = android.widget.Switch(this).apply {
                 text = file.name
                 textSize = 11f
@@ -250,28 +272,6 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
                 }
             }
             card.addView(enabled)
-            val runButton = Button(this).apply {
-                text = "Executar pacote"
-                isEnabled = enabled.isChecked && runtimeReady
-                alpha = if (isEnabled) 1f else 0.45f
-                setOnClickListener {
-                    if (!enabled.isChecked) {
-                        output.text = "Ative este pacote antes de executar."
-                    } else {
-                        isEnabled = false
-                        output.text = "Executando ${file.name}…"
-                        Thread {
-                            val result = runCatching {
-                                GdHubRuntime.nativeRunPackage(file.absolutePath)
-                            }.getOrElse { "Falha no runtime: ${it.message}" }
-                            runOnUiThread {
-                                output.text = result
-                                isEnabled = enabled.isChecked && runtimeReady
-                            }
-                        }.start()
-                    }
-                }
-            }
             card.addView(runButton, LinearLayout.LayoutParams(-1, dp(38)))
             val params = LinearLayout.LayoutParams(-1, -2)
             params.bottomMargin = dp(7)
@@ -287,7 +287,7 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
             val activity = activeActivity ?: return
             activity.runOnUiThread {
                 activity.runtimeReady = true
-                if (::output.isInitialized) activity.output.text = message
+                if (activity::output.isInitialized) activity.output.text = message
                 activity.refreshModList()
             }
         }
