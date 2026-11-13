@@ -1,20 +1,24 @@
 # GD Hub C API v1
 
-The C API is a small, versioned boundary for future native hosts. It lets a host create a runtime, execute a GDHB package and receive text output without depending on C++ classes.
+A C API versionada oferece uma fronteira simples para hosts nativos futuros. Ela permite criar um runtime, executar um pacote GDHB e receber a saída em texto sem depender das classes C++.
 
-Header: runtime/c_api/gdhub_c_api.h
+Header: `runtime/c_api/gdhub_c_api.h`
 
-Functions:
-- gdhub_api_version(): returns API version 1.
-- gdhub_runtime_create(): creates a runtime handle.
-- gdhub_runtime_run_package(...): validates and runs a package.
-- gdhub_runtime_last_error(...): reads the last error.
-- gdhub_runtime_destroy(...): releases the handle.
+- `gdhub_api_version()`: retorna a versão 1.
+- `gdhub_runtime_create()`: cria um handle ou retorna null se a alocação falhar.
+- `gdhub_runtime_run_package(...)`: valida e executa um pacote.
+- `gdhub_runtime_last_error(...)`: lê o último erro do handle.
+- `gdhub_runtime_destroy(...)`: libera o handle; aceitar null é seguro.
 
-Return codes for gdhub_runtime_run_package:
-- 0: success.
-- -1: invalid arguments.
-- -2: package or DashCode runtime error.
-- -3: output buffer is too small; output_required reports the required byte count including the final NUL.
+## Códigos de retorno
 
-This API is not yet connected to Geometry Dash. It is the runtime boundary that a future, verified host integration can call.
+- `0`: sucesso.
+- `-1`: argumentos inválidos.
+- `-2`: erro de pacote ou execução DashCode.
+- `-3`: buffer de saída pequeno; `output_required` informa os bytes necessários, incluindo o NUL final.
+
+## Uso e limites
+
+O host deve chamar funções de um mesmo handle sequencialmente. Handles diferentes podem ser usados independentemente. O ponteiro retornado por `gdhub_runtime_last_error` pertence ao handle e não deve ser guardado depois de destruir o handle ou iniciar outra chamada que altere seu erro.
+
+Esta API ainda não está conectada ao Geometry Dash. É apenas a fronteira do runtime que uma futura integração verificada poderá chamar.
