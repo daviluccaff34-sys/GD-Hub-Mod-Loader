@@ -95,10 +95,10 @@ object BaseRobTopActivity {
         }
     }
     @JvmStatic fun loadingFinished() {}
-    @JvmStatic fun getDeviceRefreshRate(): Float {
+    @Suppress("DEPRECATION")\n    @JvmStatic fun getDeviceRefreshRate(): Float {
         val activity = me.get() ?: return 60f
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) activity.display?.refreshRate ?: 60f
-        else @Suppress("DEPRECATION") activity.windowManager.defaultDisplay.refreshRate
+        else activity.windowManager.defaultDisplay.refreshRate
     }
 
     @JvmStatic fun setupEveryplay() {}
