@@ -38,21 +38,29 @@ int main() {
     const std::string package_path = "test_sample.gdhb";
     {
         std::ofstream out(package_path, std::ios::binary);
-        const auto u16 = [&out](unsigned v) { out.put(static_cast<char>(v & 255)); out.put(static_cast<char>((v >> 8) & 255)); };
-        const auto u32 = [&out](unsigned v) { for (int i=0;i<4;++i) out.put(static_cast<char>((v >> (8*i)) & 255)); };
+        const auto u16 = [&out](unsigned v) {
+            out.put(static_cast<char>(v & 255));
+            out.put(static_cast<char>((v >> 8) & 255));
+        };
+        const auto u32 = [&out](unsigned v) {
+            for (int i = 0; i < 4; ++i) out.put(static_cast<char>((v >> (8 * i)) & 255));
+        };
         const auto entry = [&](const std::string& path, const std::string& data) {
-            u16(static_cast<unsigned>(path.size())); u32(static_cast<unsigned>(data.size()));
+            u16(static_cast<unsigned>(path.size()));
+            u32(static_cast<unsigned>(data.size()));
             out.write(path.data(), static_cast<std::streamsize>(path.size()));
             out.write(data.data(), static_cast<std::streamsize>(data.size()));
         };
-        out.write("GDHB", 4); u16(1); u16(2);
-        entry("manifest.json", "{\\"id\\":\\"sample\\",\\"name\\":\\"Sample\\",\\"version\\":\\"1.0\\"}");
-        entry("src/main.dash", "say \\"hello\\"\n");
+        out.write("GDHB", 4);
+        u16(1);
+        u16(2);
+        entry("manifest.json", "{\"id\":\"sample\",\"name\":\"Sample\",\"version\":\"1.0\"}");
+        entry("src/main.dash", "say \"hello\"\n");
     }
     gdhub::runtime::GdhbReader reader;
     gdhub::runtime::PackageInfo info;
     ok &= check(reader.inspect(package_path, info), "GDHB package is read");
-    ok &= check(info.id == "sample" && info.main_source == "say \\"hello\\"\n",
+    ok &= check(info.id == "sample" && info.main_source == "say \"hello\"\n",
                 "manifest and DashCode source are extracted");
     std::remove(package_path.c_str());
     return ok ? 0 : 1;
