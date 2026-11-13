@@ -2,17 +2,17 @@
 
 Site estático para Cloudflare Pages. Não precisa de build command.
 
-## Publicar no Cloudflare Pages
+## Publicar no Cloudflare Pages sem conectar ao GitHub
 
-1. No painel Cloudflare, abra **Workers & Pages** → **Create** → **Pages** → **Connect to Git**.
-2. Selecione o repositório `daviluccaff34-sys/GD-Hub-Mod-Loader`.
-3. Em **Root directory (advanced)**, informe `studio`.
-4. Framework preset: **None**.
-5. Build command: deixe vazio.
-6. Build output directory: `.`.
-7. Clique em **Save and Deploy**.
+A pasta `studio/` é um site estático. Para publicar diretamente, sem integração com GitHub:
 
-O arquivo `index.html` contém a interface e o empacotador. A geração ocorre localmente no navegador: os arquivos do usuário não são enviados a um servidor.
+1. No painel Cloudflare, abra **Workers & Pages** e crie uma aplicação **Pages**.
+2. Escolha a opção de **Direct Upload / Upload assets** (não Connect to Git).
+3. Envie o conteúdo da pasta `studio/` como os arquivos do site.
+4. Confirme que `index.html` está na raiz do upload.
+5. Finalize o deploy. O endereço `*.pages.dev` será exibido pelo Cloudflare.
+
+A página inicial `index.html` agora é o próprio Mod Creator. O catálogo e a documentação ficam nos links do topo. Para atualizar, envie novamente os arquivos atualizados da pasta `studio/`.
 
 ## O que funciona
 
@@ -30,7 +30,7 @@ O Studio **empacota** fontes e recursos; não compila código nativo nem cria AP
 
 ## GD Hub Mod Creator
 
-Abra `mod-creator.html` para usar o **GD Hub Mod Creator**:
+A página inicial `index.html` já abre o **GD Hub Mod Creator**. `mod-creator.html` mantém a mesma ferramenta como rota direta:
 
 - Linguagem DashPT em português, compilada para comandos que o interpretador DashCode atual já reconhece.
 - Validação de blocos e comandos.
@@ -42,17 +42,9 @@ Abra `mod-creator.html` para usar o **GD Hub Mod Creator**:
 
 O pacote gerado é reconhecido pelo leitor GDHB e o script principal usa a linguagem suportada pelo runtime atual. Os arquivos `level/objects.json` e `ui/layout.json` são salvos como dados extras do projeto; o runtime atual não os desenha no Geometry Dash. Para isso, ainda é necessário implementar e testar o adaptador nativo Cocos2d-x para criar objetos e componentes de UI no processo do jogo. O Creator não afirma que esses recursos já funcionam dentro da gameplay.
 
-## Cloudflare: publicar o Studio
+## Cloudflare: catálogo e Worker
 
-1. Entre no painel Cloudflare.
-2. Abra **Workers & Pages** → **Create application** → **Pages** → **Connect to Git**.
-3. Autorize o GitHub e escolha `daviluccaff34-sys/GD-Hub-Mod-Loader`.
-4. Configure **Root directory** como `studio`.
-5. Escolha **None** em Framework preset.
-6. Deixe **Build command** vazio e coloque `.` em **Build output directory**.
-7. Clique em **Save and Deploy**.
-
-Quando o deploy terminar, o endereço `*.pages.dev` exibido pelo Cloudflare será o endereço público. O criador ficará em `https://SEU-PROJETO.pages.dev/mod-creator.html`.
+O site Pages é publicado por upload direto e não precisa conectar o repositório GitHub. O Worker do catálogo é um serviço separado. Informe a URL HTTPS dele em `catalogo.html`. O Worker precisa ter o binding KV `MODS`; para aprovar envios, configure o segredo `ADMIN_TOKEN`.
 
 ### O que precisa conectar (e o que não precisa)
 
