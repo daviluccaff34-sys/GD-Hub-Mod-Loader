@@ -47,3 +47,7 @@ Do not use guessed memory offsets, guessed function signatures, or another loade
 ## Companion overlay interaction update
 
 The Android-hosted companion overlay launcher is now 40dp and remains draggable. Its panel is 240×260dp and can be repositioned by dragging the panel header. This is the Android host overlay, not a native Cocos scene node. Its behavior still requires physical-device verification and does not establish a verified Geometry Dash 2.2081 native adapter.
+
+## DashCode UI bridge (first-release scope)
+
+The DashCode interpreter can emit structured `ui title`, `ui label`, `ui button`, and `ui clear` instructions. GeometryDashActivity renders those instructions in a touchable Android view layer above the hosted game. This is an in-game-visible companion UI, not a Cocos scene node and not a Geometry Dash editor object. The native startup probe reports whether the expected Cocos symbols are present; it does not invoke unverified game functions. Real editor-object creation (blocks, portals, triggers) remains gated on a verified game-version adapter and device tests.
