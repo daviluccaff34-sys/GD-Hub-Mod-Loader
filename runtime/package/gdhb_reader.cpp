@@ -65,10 +65,10 @@ class JsonCheck {
             unsigned char c=static_cast<unsigned char>(s[p++]);
             if(c=='"')return true;
             if(c<0x20)return false;
-            if(c!='\\\\'){if(out)*out+=static_cast<char>(c);continue;}
+            if(c!='\\'){if(out)*out+=static_cast<char>(c);continue;}
             if(p>=s.size())return false;
             char e=s[p++];
-            if(e=='"'||e=='\\\\'||e=='/'){if(out)*out+=e;}
+            if(e=='"'||e=='\\'||e=='/'){if(out)*out+=e;}
             else if(e=='b'||e=='f'||e=='n'||e=='r'||e=='t'){if(out)*out+=(e=='b'?'\\b':e=='f'?'\\f':e=='n'?'\\n':e=='r'?'\\r':'\\t');}
             else if(e=='u'){for(int i=0;i<4;++i){if(p>=s.size()||!std::isxdigit(static_cast<unsigned char>(s[p++])))return false;}}
             else return false;
