@@ -1,0 +1,6 @@
+# Hello DashPT — exemplo de DashPT compilado para DashCode
+make player = "Cube"
+make pontos = 0
+add 10 to pontos
+say "Olá, {player}! Seu mod DashPT foi carregado."
+say "Pontos de exemplo: {pontos}"
