@@ -1,8 +1,11 @@
-# Hello Dash — exemplo básico do GD Hub
-make player = "Cube"
-say "Olá, {player}! Bem-vindo ao GD Hub."
+# GD Hub — interface de criação de blocos
+# O pacote declara a interface. A criação real depende do adaptador nativo
+# do editor do Geometry Dash, que ainda não está disponível no runtime.
 
-# Interface exibida sobre o jogo
-ui title "Hello Dash"
-ui label "Olá, {player}! Esta interface foi criada pelo DashCode."
-ui button "Continuar"
+ui title "GD Hub • Block Generator"
+ui label "Gerador de blocos para Geometry Dash"
+ui label "Selecione Gerar blocos quando a integração nativa estiver disponível."
+ui button "Gerar blocos"
+ui button "Fechar"
+
+say "Interface GD Hub carregada."
