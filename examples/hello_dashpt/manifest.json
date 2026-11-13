@@ -1,0 +1,13 @@
+{
+  "id": "example.hello-dashpt",
+  "name": "Hello DashPT",
+  "version": "1.0.0",
+  "author": "GD Hub Example",
+  "runtime": "dashcode",
+  "runtime_version": "0.1.0",
+  "game_versions": [
+    "2.2081"
+  ],
+  "entry": "src/main.dash",
+  "permissions": []
+}
