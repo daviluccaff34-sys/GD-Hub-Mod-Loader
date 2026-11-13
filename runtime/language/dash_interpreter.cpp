@@ -193,6 +193,28 @@ bool DashInterpreter::execute_block(const std::vector<std::string>& lines,
             return false;
         }
 
+        if (line == "ui clear") {
+            output.push_back("@gdhub-ui|clear|");
+            ++index;
+            continue;
+        }
+
+        if (line.rfind("ui title ", 0) == 0 ||
+            line.rfind("ui label ", 0) == 0 ||
+            line.rfind("ui button ", 0) == 0) {
+            const std::size_t command_end = line.find(' ', 3);
+            const std::string command = line.substr(3, command_end - 3);
+            Value value;
+            if (!evaluate_value(line.substr(command_end + 1), variables, value)) return false;
+            const std::string rendered = interpolate(value_to_string(value), variables);
+            if (rendered.size() > kMaxOutputLineBytes) {
+                m_error = "Texto da interface excede 4096 bytes.";
+                return false;
+            }
+            output.push_back("@gdhub-ui|" + command + "|" + rendered);
+            ++index;
+            continue;
+        }
         if (line.rfind("say ", 0) == 0) {
             Value value;
             if (!evaluate_value(line.substr(4), variables, value)) return false;
