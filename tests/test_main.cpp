@@ -7,6 +7,7 @@
 #include "loader/game/game_ui_render_plan.hpp"
 #include "loader/game/cocos_runtime_symbols.hpp"
 #include <cstdio>
+#include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <string>
