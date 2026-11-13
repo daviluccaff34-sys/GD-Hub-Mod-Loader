@@ -1,0 +1,13 @@
+mod "Hello Dash" {
+    id: "example.hello-dash"
+    version: "1.0.0"
+}
+
+fn boas_vindas(nome: string) {
+    ui.toast("Olá, " + nome + "!")
+}
+
+event game.level_started(info) {
+    boas_vindas(info.player_name)
+    log("A fase começou: " + info.level_name)
+}
