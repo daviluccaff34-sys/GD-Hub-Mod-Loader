@@ -40,9 +40,9 @@
 
 - [x] Add a moderated Cloudflare Worker API for GDHB submissions, approved catalog listings, and downloads.
 - [x] Validate GDHB v1 package structure on the server before accepting a submission.
-- [ ] Enable Cloudflare R2 in the account, create the `gdhub-mods` bucket, and bind it to the Worker.
-- [ ] Deploy the catalog Worker and configure the HTTPS API URL in the Android build.
-- [ ] Test a real upload, pending-review state, approval, listing, and download.
+- [x] Create Workers KV namespace `GDHUB_MOD_CATALOG` and bind it to the deployed catalog Worker.
+- [x] Deploy `gdhub-mod-catalog` and configure its HTTPS API URL in the Android build.
+- [ ] Add the `ADMIN_TOKEN` Worker secret, then test upload, pending review, approval, listing, and download.
 
 ## Geometry Dash APK identity warning
 
