@@ -85,17 +85,17 @@ int main() {
             out.write(data.data(), static_cast<std::streamsize>(data.size()));
         };
         out.write("GDHB",4); u16(1); u16(2);
-        entry("manifest.json",manifest); entry("src/main.dash","say \\"ok\\"\\n");
+        entry("manifest.json",manifest); entry("src/main.dash","say \"ok\"\n");
     };
     const std::string invalid_json_path = "test_invalid_json.gdhb";
-    write_test_package(invalid_json_path, "{\\"id\\":\\"bad\\",\\"name\\":,\\"version\\":\\"1\\"}");
+    write_test_package(invalid_json_path, "{\"id\":\"bad\",\"name\":,\"version\":\"1\"}");
     ok &= check(!reader.inspect(invalid_json_path, info), "GDHB rejects malformed manifest JSON");
     const std::string nested_key_path = "test_nested_manifest.gdhb";
-    write_test_package(nested_key_path, "{\\"meta\\":{\\"id\\":\\"fake\\"},\\"id\\":\\"real\\",\\"name\\":\\"Name\\",\\"version\\":\\"1\\"}");
+    write_test_package(nested_key_path, "{\"meta\":{\"id\":\"fake\"},\"id\":\"real\",\"name\":\"Name\",\"version\":\"1\"}");
     ok &= check(reader.inspect(nested_key_path, info) && info.id == "real",
                 "manifest fields are read only from the top-level object");
     const std::string duplicate_key_path = "test_duplicate_manifest.gdhb";
-    write_test_package(duplicate_key_path, "{\\"id\\":\\"one\\",\\"id\\":\\"two\\",\\"name\\":\\"Name\\",\\"version\\":\\"1\\"}");
+    write_test_package(duplicate_key_path, "{\"id\":\"one\",\"id\":\"two\",\"name\":\"Name\",\"version\":\"1\"}");
     ok &= check(!reader.inspect(duplicate_key_path, info), "GDHB rejects duplicate JSON keys");
     ok &= check(gdhub_runtime_run_package(nullptr, package_path.c_str(), nullptr, 0, nullptr) == -1,
                 "C API rejects null runtime handles");
