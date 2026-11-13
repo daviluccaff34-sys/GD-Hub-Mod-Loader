@@ -28,5 +28,5 @@
 
 ## Important boundaries
 - A .gdhb is a package containing source code, not a compiled mod.
-- The current reader returns src/main.dash as text; it does not install or execute a package automatically.
+- The reader returns src/main.dash as text; ModRuntime passes it to the DashCode interpreter. Package execution is available in the companion app, not inside Geometry Dash.
 - The current project is not yet an operational in-game mod loader. No injection, hooks, or game modification are implemented.
