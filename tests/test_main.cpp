@@ -90,6 +90,19 @@ int main() {
     ok &= check(output.size() == 4 && output[0] == "GD Hub: 5" &&
                 output[1] == "ready" && output[2] == "go" && output[3] == "go",
                 "variables, interpolation, if/else and repeat");
+    const std::string ui_program =
+        "make title = \"Minha interface\"\n"
+        "ui title title\n"
+        "ui label \"Olá {title}\"\n"
+        "ui button \"Continuar\"\n"
+        "ui clear\n";
+    ok &= check(interpreter.run(ui_program, output), "DashCode UI commands are accepted");
+    ok &= check(output.size() == 4 &&
+                output[0] == "@gdhub-ui|title|Minha interface" &&
+                output[1] == "@gdhub-ui|label|Olá Minha interface" &&
+                output[2] == "@gdhub-ui|button|Continuar" &&
+                output[3] == "@gdhub-ui|clear|",
+                "DashCode UI commands emit structured render instructions");
     ok &= check(!interpreter.run("say missing\n", output), "unknown variable is rejected");
     ok &= check(!interpreter.run("repeat 1.5\nsay \"bad\"\nend\n", output),
                 "repeat rejects fractional counts");
