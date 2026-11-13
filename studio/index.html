@@ -2,95 +2,103 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#090b18"><title>GD Hub Mod Studio</title>
+<meta name="theme-color" content="#090b18"><title>GD Hub Mod Creator</title>
 <style>
-:root{color-scheme:dark;--bg:#090b18;--panel:#11162a;--panel2:#171e36;--line:#293252;--text:#f4f6ff;--muted:#a8b2d1;--cyan:#67e8f9;--purple:#9b87ff;--pink:#ff80c8}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% 0%,#30235c 0,transparent 40%),var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
-header{padding:28px max(20px,calc((100% - 1050px)/2));border-bottom:1px solid var(--line);background:#090b18bb}
-.brand{display:flex;align-items:center;gap:12px}.logo{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,var(--purple),var(--cyan));display:grid;place-items:center;color:#090b18;font-weight:1000;font-size:22px}
-h1{font-size:clamp(25px,5vw,38px);margin:20px 0 5px;line-height:1.1}h2{font-size:18px;margin:0 0 14px}p{color:var(--muted);margin:5px 0}
-main{max-width:1050px;margin:25px auto;padding:0 18px 50px;display:grid;grid-template-columns:1.2fr .8fr;gap:18px}
-.panel{background:linear-gradient(180deg,#151b31,#101528);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 15px 50px #0003}
-.full{grid-column:1/-1}.field{display:grid;gap:6px;margin:13px 0}.field label{font-size:13px;color:#cbd4f1;font-weight:700}
-input,textarea,select{width:100%;background:#090f20;border:1px solid #354064;color:var(--text);padding:12px;border-radius:10px;font:inherit;outline:none}
-input:focus,textarea:focus,select:focus{border-color:var(--cyan)}textarea{min-height:170px;resize:vertical;font:13px/1.5 ui-monospace,monospace}
-button{border:0;border-radius:11px;padding:12px 17px;background:linear-gradient(100deg,var(--purple),var(--cyan));color:#08101d;font-weight:900;font-size:14px;cursor:pointer}
-button.secondary{background:#242d4a;color:var(--text);border:1px solid #3a466c}button:disabled{opacity:.5;cursor:not-allowed}
-.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}.hint{font-size:12px;color:var(--muted)}.status{margin-top:13px;padding:12px;border:1px solid var(--line);border-radius:10px;color:#b9f7e8;background:#0c2527;white-space:pre-wrap}
-.template{display:flex;gap:10px;align-items:flex-start;background:#0c1224;border:1px solid var(--line);padding:13px;border-radius:12px;margin:9px 0}
-.template input{width:auto;margin-top:5px}.tag{font-size:11px;color:var(--cyan);border:1px solid #3d6072;border-radius:20px;padding:2px 8px}
-.preview{background:#080d1b;border:1px dashed #47557c;border-radius:12px;padding:14px;min-height:90px;white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.5 ui-monospace,monospace}
-footer{text-align:center;padding:25px;color:var(--muted);font-size:12px;border-top:1px solid var(--line)}
-@media(max-width:760px){main{grid-template-columns:1fr}.full{grid-column:auto}header{padding:22px 18px}}
+:root{color-scheme:dark;--bg:#080b16;--panel:#121a30;--line:#2a385c;--text:#f4f6ff;--muted:#aab6d5;--cyan:#65e8f5;--purple:#a28bff;--pink:#ff80c8;--yellow:#ffe28a}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 75% 0%,#30245c 0,transparent 38%),var(--bg);color:var(--text);font:14px/1.5 system-ui, sans-serif}
+header{padding:24px max(18px,calc((100% - 1120px)/2));border-bottom:1px solid var(--line)}h1{font-size:clamp(26px,5vw,38px);margin:12px 0 4px}h2{font-size:18px;margin:0 0 12px}p{color:var(--muted);margin:4px 0}.brand{display:flex;gap:10px;align-items:center}.logo{background:linear-gradient(135deg,var(--purple),var(--cyan));color:#07101c;font-weight:1000;padding:8px 12px;border-radius:12px}
+main{max-width:1120px;margin:20px auto;padding:0 14px 40px;display:grid;grid-template-columns:1fr 1fr;gap:14px}.panel{background:linear-gradient(180deg,#151e37,#101629);border:1px solid var(--line);border-radius:16px;padding:17px;min-width:0}.wide{grid-column:1/-1}
+label{display:block;color:#d6def5;font-weight:700;font-size:12px;margin:10px 0 5px}input,textarea,select{width:100%;padding:11px;border:1px solid #39496e;border-radius:9px;background:#080f20;color:var(--text);font:inherit}textarea{min-height:260px;resize:vertical;font:13px/1.55 ui-monospace,monospace;tab-size:4}
+button{padding:10px 14px;border:0;border-radius:9px;background:linear-gradient(100deg,var(--purple),var(--cyan));color:#08101c;font-weight:900;cursor:pointer}button.alt{background:#263454;color:var(--text);border:1px solid #405176}button.danger{background:#49263d;color:#ffd6e9}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.muted{font-size:12px;color:var(--muted)}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.tab{background:#202b49;color:var(--text)}.tab.active{background:linear-gradient(100deg,var(--purple),var(--cyan));color:#08101c}
+.hidden{display:none!important}.notice{padding:11px;border:1px solid #756238;background:#2b2516;color:#ffe9ad;border-radius:10px;margin-top:10px}.good{border-color:#28675f;background:#102a2a;color:#b9f7e8}.bad{border-color:#77364c;background:#2c1722;color:#ffc0d0}
+pre,.preview{white-space:pre-wrap;overflow-wrap:anywhere;background:#080f20;border:1px dashed #3d4d76;border-radius:10px;padding:12px;min-height:90px;font:12px/1.5 ui-monospace,monospace}.ui-list{display:grid;gap:8px}.ui-item{display:grid;grid-template-columns:1fr 1fr auto;gap:7px;background:#0c1428;padding:9px;border:1px solid var(--line);border-radius:10px;align-items:center}.ui-item input{padding:8px}.object-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.object{background:#0c1428;border:1px solid var(--line);padding:10px;border-radius:9px}.object strong{display:block;color:var(--cyan)}footer{text-align:center;color:var(--muted);padding:20px;border-top:1px solid var(--line)}
+@media(max-width:760px){main{grid-template-columns:1fr}.wide{grid-column:auto}.ui-item{grid-template-columns:1fr 1fr}.object-grid{grid-template-columns:1fr 1fr}}
 </style></head>
 <body>
-<header><div class="brand"><div class="logo">GD</div><div><strong>GD HUB</strong><div class="hint">MOD STUDIO · CRIADOR DE PACOTES</div></div></div><h1>Crie seu próximo mod.</h1><p>Monte a estrutura, edite o código e gere um arquivo .gdhb direto no navegador.</p><p style="margin-top:12px"><a href="./mod-creator.html" style="color:#67e8f9;font-weight:800">Abrir GD Hub Mod Creator →</a></p> <a href="./comandos.html" style="color:#ff80c8;font-weight:800;margin-left:12px">Lista de comandos DashPT →</a> <a href="./catalogo.html" style="color:#67e8f9;font-weight:800;margin-left:12px">Catálogo de mods →</a></header>
+<header><nav style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px"><a href="./catalogo.html" style="color:#67e8f9">Catálogo de mods</a><a href="./comandos.html" style="color:#ff80c8">Comandos DashPT</a></nav><div class="brand"><div class="logo">GD</div><div><b>GD HUB · MOD CREATOR</b><div class="muted">LINGUAGEM PORTUGUESA · COMPILADOR · EMPACOTADOR</div></div></div><h1>Crie e compile seu mod.</h1><p>Escreva na linguagem DashPT, monte uma UI e gere um pacote GDHB para importar no GD Hub.</p></header>
 <main>
-<section class="panel">
-<h2>01 · Informações do mod</h2>
-<div class="field"><label for="name">Nome</label><input id="name" maxlength="64" value="Meu primeiro mod"></div>
-<div class="field"><label for="id">ID único (use letras, números, ponto, hífen ou _)</label><input id="id" maxlength="80" value="meuprimeiromod"></div>
-<div class="field"><label for="version">Versão</label><input id="version" maxlength="32" value="1.0.0"></div>
-<div class="field"><label for="author">Autor</label><input id="author" maxlength="48" placeholder="Seu nome ou apelido"></div>
-<div class="field"><label for="description">Descrição</label><input id="description" maxlength="500" value="Criado com GD Hub Mod Studio."></div>
+<section class="panel"><h2>1 · Identidade do mod</h2>
+<label>Nome</label><input id="name" value="Meu Mod DashPT" maxlength="64">
+<label>ID único</label><input id="id" value="meu.mod.dashpt" maxlength="80">
+<label>Versão</label><input id="version" value="1.0.0" maxlength="32">
+<label>Autor</label><input id="author" value="Criador" maxlength="48">
+<label>Descrição</label><input id="description" value="Mod criado com GD Hub Mod Creator." maxlength="500">
 </section>
-<section class="panel">
-<h2>02 · Modelo inicial</h2>
-<label class="template"><input type="radio" name="template" value="basic" checked><span><strong>Mod básico</strong><br><span class="hint">Estrutura simples para começar a programar.</span></span></label>
-<label class="template"><input type="radio" name="template" value="icons"><span><strong>More Icons</strong> <span class="tag">MODELO</span><br><span class="hint">Projeto de ícones personalizados e combinações visuais.</span></span></label>
-<div class="field"><label for="extra">Arquivos de imagem (opcional)</label><input id="extra" type="file" accept="image/png,image/webp,image/jpeg" multiple></div>
-<p class="hint">As imagens serão incluídas em assets/icons/. Limite total do pacote: 16 MiB.</p>
+<section class="panel"><h2>2 · O que vai no pacote?</h2>
+<p>O compilador cria o manifesto e transforma DashPT em DashCode, a linguagem que o runtime atual já interpreta.</p>
+<div class="notice">Atenção: objetos de fase e interfaces serão salvos no pacote como dados de projeto. O runtime atual ainda não possui o adaptador Cocos que desenha objetos/UI dentro do Geometry Dash. Eles não serão apresentados como recursos ativos no jogo antes dessa integração.</div>
+<div class="row" style="margin-top:12px"><button class="alt" id="example">Carregar exemplo</button><button class="alt" id="clear">Limpar código</button></div>
 </section>
-<section class="panel full">
-<h2>03 · Código principal (src/main.dash)</h2>
-<textarea id="source" spellcheck="false"># Meu primeiro mod
-# Comece seu código DashCode aqui.
-Speak("Meu mod foi carregado!")</textarea>
-<div class="actions"><button class="secondary" id="reset">Restaurar modelo</button><button id="build">Validar e gerar .gdhb</button></div>
-<div id="status" class="status" role="status">Preencha os dados e gere seu pacote. O arquivo é montado localmente no seu dispositivo.</div>
+<section class="panel wide">
+<div class="tabs"><button class="tab active" data-tab="code">Código DashPT</button><button class="tab" data-tab="objects">Objetos GD</button><button class="tab" data-tab="ui">UI Builder</button><button class="tab" data-tab="compiled">Código compilado</button></div>
+<div id="pane-code"><h2>3 · Código do mod</h2><p>Comandos: <b>fale</b>, <b>crie variavel</b>, <b>defina</b>, <b>some</b>, <b>se</b>, <b>senao</b>, <b>repita</b>, <b>fim</b> e comandos de interface. <a href="./comandos.html" style="color:#67e8f9">Ver lista completa →</a></p>
+<label>Seu código .dashpt</label><textarea id="source" spellcheck="false"># Meu primeiro mod em português
+crie variavel jogador = "Cube"
+crie variavel pontos = 0
+
+repita 3
+    some 10 em pontos
+fim
+
+se pontos >= 30
+    fale "{jogador} fez {pontos} pontos!"
+senao
+    fale "Continue tentando!"
+fim</textarea>
+<p class="muted">Use aspas para textos. Condições aceitam ==, !=, &gt;, &lt;, &gt;= e &lt;=. A indentação é livre.</p></div>
+<div id="pane-objects" class="hidden"><h2>4 · Rascunho de objetos Geometry Dash</h2><p>Adicione objetos ao mapa de dados do projeto. As coordenadas são valores do editor, não pixels do celular.</p>
+<div class="object-grid" id="objectButtons"></div><div class="ui-list" id="objects" style="margin-top:12px"></div></div>
+<div id="pane-ui" class="hidden"><h2>5 · Montador de interface (UI Builder)</h2><p>Monte a estrutura de uma interface para seu mod.</p>
+<div class="row"><select id="uiType"><option value="painel">Painel</option><option value="texto">Texto</option><option value="botao">Botão</option><option value="imagem">Imagem</option><option value="alternador">Alternador</option><option value="barra">Barra de progresso</option></select><button id="addUi">Adicionar componente</button></div>
+<div id="uiList" class="ui-list" style="margin-top:12px"></div><label>Prévia estrutural</label><div id="uiPreview" class="preview">Sua interface aparecerá aqui.</div></div>
+<div id="pane-compiled" class="hidden"><h2>6 · Resultado da compilação</h2><pre id="compiled">Clique em Validar e compilar para ver o DashCode gerado.</pre></div>
+<div class="row" style="margin-top:14px"><button id="validate">Validar código</button><button id="build">Compilar e gerar .gdhb</button></div><div id="status" class="notice" role="status">Pronto para criar. A validação não executa código no jogo.</div>
 </section>
-<section class="panel full">
-<h2>04 · Prévia da estrutura</h2><div class="preview" id="tree">manifest.json
-src/
-  main.dash
-assets/
-  icons/</div>
-<p class="hint">O pacote usa GDHB v1: cabeçalho binário, manifesto JSON, código-fonte e recursos. Isso é empacotamento/validação, não compilação de código nativo.</p>
-</section>
-</main>
-<footer>GD Hub Mod Studio · Projeto comunitário · Os arquivos são processados localmente no navegador.</footer>
+<section class="panel wide"><h2>7 · Como importar no GD Hub</h2><ol><li>Gere o arquivo <code>.gdhb</code>.</li><li>Abra o GD Hub Mod Loader no Android.</li><li>Entre no gerenciador de mods e escolha importar/instalar pacote.</li><li>Selecione o arquivo salvo no aparelho.</li></ol><p class="muted">O pacote usa GDHB v1, com manifest.json e src/main.dash obrigatórios. O loader executa os comandos DashCode reconhecidos pelo runtime atual.</p></section>
+<section class="panel wide" id="pieces-panel"><h2>8 · Biblioteca de peças de código</h2><p>Peças independentes de código, não blocos Scratch. Toque para inserir no cursor do editor DashPT.</p><div class="row"><input id="pieceSearch" placeholder="Pesquisar 3.420+ peças"><select id="pieceCategory"><option value="">Todas as categorias</option></select><span id="pieceCount" class="muted"></span></div><div id="pieceResults" class="object-grid" style="margin-top:12px"></div><p class="muted">API: GDHubPieces.registerPiece(), insertPiece(), search() e getAll().</p></section>
+<section class="panel wide" id="construction-panel"><h2>9 · API de construção de fases</h2><p>Crie objetos, grupos, triggers e propriedades. Exportação para <code>level/build.json</code>.</p><div class="row"><select id="buildKind"><option value="objeto">Objeto</option><option value="grupo">Grupo</option><option value="trigger">Trigger</option></select><select id="buildType"><option>bloco</option><option>espinho</option><option>serra</option><option>moeda</option><option>portal</option><option>gatilho</option><option>decoracao</option></select><input id="buildX" type="number" value="0" placeholder="X"><input id="buildY" type="number" value="0" placeholder="Y"><button id="buildAdd">Adicionar</button></div><div class="row" style="margin-top:10px"><input id="buildTarget" placeholder="ID do objeto"><input id="buildProperty" placeholder="Propriedade"><input id="buildValue" placeholder="Valor"><button class="alt" id="buildSet">Configurar</button></div><div class="row" style="margin-top:10px"><input id="buildGroupName" placeholder="Nome do grupo"><button class="alt" id="buildGroup">Criar grupo</button><button class="alt" id="buildGroupAssign">Adicionar objeto ao grupo</button><input id="buildTrigger" placeholder="Tipo de trigger"><button class="alt" id="buildTriggerAdd">Criar trigger</button></div><div class="row" style="margin-top:10px"><button class="danger" id="buildRemove">Remover ID</button><button class="alt" id="buildClear">Limpar</button></div><pre id="buildPreview">Nenhum elemento.</pre><p class="muted">Isto gera dados estruturados. O adaptador nativo Cocos2d-x ainda precisa interpretar os dados para alterar fases reais no Geometry Dash.</p></section></main><footer>GD Hub Mod Creator · Compilação DashPT → DashCode · Empacotamento GDHB v1</footer>
+<script src="./code-pieces.js"></script>
 <script>
-const $=id=>document.getElementById(id);
-const templates={
-basic:'# Meu primeiro mod\n# Comece seu código DashCode aqui.\nSpeak("Meu mod foi carregado!")',
-icons:'# More Icons — projeto de ícones\n# Este pacote é um ponto de partida para recursos visuais.\n# Combinações são apenas visuais e pertencem ao jogador.\n# A integração com a tela de seleção de ícones do jogo ainda precisa ser implementada no GD Hub.\nSpeak("More Icons: pacote carregado!")'
-};
-function selected(){return document.querySelector('input[name="template"]:checked').value}
-function resetSource(){$('source').value=templates[selected()]}
-document.querySelectorAll('input[name="template"]').forEach(x=>x.addEventListener('change',resetSource));
-$('reset').addEventListener('click',resetSource);
-function enc(s){return new TextEncoder().encode(s)}
-function u16(n){return [n&255,(n>>>8)&255]}
-function u32(n){return [n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255]}
-function concat(chunks){let size=chunks.reduce((n,c)=>n+c.length,0),out=new Uint8Array(size),p=0;for(const c of chunks){out.set(c,p);p+=c.length}return out}
-function entry(path,data){const p=enc(path),d=data instanceof Uint8Array?data:enc(data);if(p.length<1||p.length>240||d.length>4*1024*1024)throw Error('Arquivo fora do limite: '+path);return concat([new Uint8Array([...u16(p.length),...u32(d.length)]),p,d])}
-function safeId(s){return /^[a-zA-Z0-9._-]+$/.test(s)&&s.length>0}
-function show(msg,ok){$('status').textContent=msg;$('status').style.color=ok?'#b9f7e8':'#ffb4c2'}
-$('build').addEventListener('click',async()=>{
-try{
-const name=$('name').value.trim(),id=$('id').value.trim(),version=$('version').value.trim(),author=$('author').value.trim(),description=$('description').value.trim(),source=$('source').value;
-if(!name||!safeId(id)||!version||!author||!description)throw Error('Confira nome, ID, versão, autor e descrição. O ID só pode ter letras, números, ponto, hífen e _.');
-if(!source.trim())throw Error('O arquivo main.dash não pode ficar vazio.');
-const manifest={id,name,version,author,description,entry:"src/main.dash",type:selected()==='icons'?'visual-icons':'script',createdWith:"GD Hub Mod Studio"};
-const files=[entry('manifest.json',JSON.stringify(manifest,null,2)),entry('src/main.dash',source)];
-const uploads=[...$('extra').files];
-for(const f of uploads){if(!/^image\/(png|webp|jpeg)$/.test(f.type))throw Error('Formato de imagem não aceito: '+f.name);const bytes=new Uint8Array(await f.arrayBuffer());files.push(entry('assets/icons/'+f.name.replace(/[^a-zA-Z0-9._-]/g,'_'),bytes))}
-if(files.length>128)throw Error('Limite de 128 arquivos excedido.');
-const packageBytes=concat([enc('GDHB'),new Uint8Array([...u16(1),...u16(files.length)]),...files]);
-if(packageBytes.length>16*1024*1024)throw Error('Pacote maior que 16 MiB.');
-const blob=new Blob([packageBytes],{type:'application/octet-stream'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=id+'.gdhb';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
-show('Pacote gerado!\n'+id+'.gdhb · '+(packageBytes.length/1024).toFixed(1)+' KiB\n'+files.length+' arquivos incluídos.\nImportante: o pacote foi validado e empacotado; recursos de gameplay ainda dependem de suporte no runtime do GD Hub.',true);
-$('tree').textContent='manifest.json\nsrc/\n  main.dash\n'+(uploads.length?'assets/\n  icons/\n'+uploads.map(f=>'    '+f.name).join('\n'):'assets/ (vazio)');
-}catch(e){show('Não foi possível gerar o pacote: '+e.message,false)}
-});
+const $=id=>document.getElementById(id);let objects=[],uis=[],serial=0;let buildData={format:"gdhub-build-draft-1",objects:[],groups:[],triggers:[]};
+const objectTypes=["bloco","espinho","serra","portal_cubo","portal_nave","portal_bola","portal_ufo","portal_onda","portal_robo","portal_aranha","portal_gravidade","moeda","checkpoint","gatilho"];
+$("objectButtons").innerHTML=objectTypes.map(t=>'<button class="object" data-object="'+t+'"><strong>'+t+'</strong><span class="muted">Adicionar ao mapa</span></button>').join("");
+document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("active",x===b));["code","objects","ui","compiled"].forEach(t=>$("pane-"+t).classList.toggle("hidden",t!==b.dataset.tab))});
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+document.querySelectorAll("[data-object]").forEach(b=>b.onclick=()=>{objects.push({tipo:b.dataset.object,x:objects.length*120,y:0});renderObjects()});
+function renderObjects(){$("objects").innerHTML=objects.map((o,i)=>'<div class="ui-item"><b>'+esc(o.tipo)+'</b><input type="number" data-obj-x="'+i+'" value="'+o.x+'" aria-label="X"><input type="number" data-obj-y="'+i+'" value="'+o.y+'" aria-label="Y"><button class="danger" data-obj-del="'+i+'">Excluir</button></div>').join("")||'<p class="muted">Nenhum objeto adicionado.</p>';document.querySelectorAll("[data-obj-x]").forEach(x=>x.onchange=()=>objects[+x.dataset.objX].x=Number(x.value));document.querySelectorAll("[data-obj-y]").forEach(x=>x.onchange=()=>objects[+x.dataset.objY].y=Number(x.value));document.querySelectorAll("[data-obj-del]").forEach(x=>x.onclick=()=>{objects.splice(+x.dataset.objDel,1);renderObjects()})}
+$("addUi").onclick=()=>{uis.push({id:"ui_"+(++serial),tipo:$("uiType").value,text:$("uiType").value==="botao"?"Meu botão":$("uiType").value==="texto"?"Texto do mod":$("uiType").value});renderUi()};
+function renderUi(){$("uiList").innerHTML=uis.map((u,i)=>'<div class="ui-item"><b>'+esc(u.tipo)+'</b><input data-ui-text="'+i+'" value="'+esc(u.text)+'" aria-label="Texto do componente"><button class="danger" data-ui-del="'+i+'">Excluir</button></div>').join("")||'<p class="muted">Adicione um componente acima.</p>';$("uiPreview").textContent=uis.map(u=>u.tipo.toUpperCase()+": "+u.text).join("\n")||"Sua interface aparecerá aqui.";document.querySelectorAll("[data-ui-text]").forEach(x=>x.oninput=()=>{uis[+x.dataset.uiText].text=x.value;$("uiPreview").textContent=uis.map(u=>u.tipo.toUpperCase()+": "+u.text).join("\n")});document.querySelectorAll("[data-ui-del]").forEach(x=>x.onclick=()=>{uis.splice(+x.dataset.uiDel,1);renderUi()})}
+const example=$("source").value;$("example").onclick=()=>{$("source").value=example};$("clear").onclick=()=>{$("source").value=""};
+function compile(src){let out=[],stack=[],lines=src.replace(/\r/g,"").split("\n"),ui=[],panels=new Set();for(let i=0;i<lines.length;i++){let s=lines[i].trim();if(!s||s.startsWith("#")){out.push(lines[i].startsWith("#")?s:"");continue}
+let m;
+if((m=s.match(/^crie painel "([^"]+)" em (-?\d+)\s*,\s*(-?\d+) tamanho (\d+)\s*,\s*(\d+)$/))){if(panels.has(m[1]))throw Error("Linha "+(i+1)+": já existe painel com esse nome.");panels.add(m[1]);ui.push({id:"painel_"+ui.length,tipo:"painel",nome:m[1],x:+m[2],y:+m[3],largura:+m[4],altura:+m[5],filhos:[]});continue}
+if((m=s.match(/^adicione (texto|botao|imagem|alternador|barra) "([^"]+)" no painel "([^"]+)"$/))){let p=ui.find(x=>x.tipo==="painel"&&x.nome===m[3]);if(!p)throw Error("Linha "+(i+1)+": painel não encontrado. Crie o painel antes.");p.filhos.push({tipo:m[1],texto:m[2],id:"componente_"+p.filhos.length});continue}
+if((m=s.match(/^fale\s+(.+)$/)))out.push("say "+m[1]);
+else if((m=s.match(/^crie variavel\s+([A-Za-z_][\w]*)\s*=\s*(.+)$/)))out.push("make "+m[1]+" = "+m[2]);
+else if((m=s.match(/^defina\s+([A-Za-z_][\w]*)\s+como\s+(.+)$/)))out.push("set "+m[1]+" to "+m[2]);
+else if((m=s.match(/^some\s+(.+)\s+em\s+([A-Za-z_][\w]*)$/)))out.push("add "+m[1]+" to "+m[2]);
+else if((m=s.match(/^se\s+(.+)$/))){out.push("if "+m[1]);stack.push("if")}
+else if(s==="senao"){if(stack[stack.length-1]!=="if")throw Error("Linha "+(i+1)+": senao precisa estar dentro de se.");out.push("else")}
+else if((m=s.match(/^repita\s+(\d+)$/))){let n=Number(m[1]);if(n>1000)throw Error("Linha "+(i+1)+": repita aceita de 0 a 1000.");out.push("repeat "+n);stack.push("repeat")}
+else if(s==="fim"){if(!stack.length)throw Error("Linha "+(i+1)+": fim sem bloco aberto.");stack.pop();out.push("end")}
+else if(!s.startsWith("fale "))throw Error("Linha "+(i+1)+": comando desconhecido: "+s);
+}if(stack.length)throw Error("Falta 'fim' para fechar um bloco.");return {source:out.join("\n").trim()+"\n",ui};}
+function makeEntries(){let result=compile($("source").value),source=result.source,commandUi=result.ui;let manifest={id:$("id").value.trim(),name:$("name").value.trim(),version:$("version").value.trim(),author:$("author").value.trim(),description:$("description").value.trim(),entry:"src/main.dash",createdWith:"GD Hub Mod Creator",language:"DashPT-1"};if(!/^[a-zA-Z0-9._-]{1,80}$/.test(manifest.id))throw Error("ID inválido. Use letras, números, ponto, hífen ou _.");for(let k of ["name","version","author","description"])if(!manifest[k])throw Error("Preencha o campo "+k+".");if(!source.trim()&&!commandUi.length&&!uis.length)throw Error("Adicione código ou componentes de interface.");if(!source.trim())source="say "+String.fromCharCode(34)+"Estrutura de interface preparada."+String.fromCharCode(34)+"\n";let files=[["manifest.json",JSON.stringify(manifest,null,2)],["src/main.dash",source]];if(objects.length)files.push(["level/objects.json",JSON.stringify({format:"gdhub-level-draft-1",objects},null,2)]);if(buildData.objects.length||buildData.groups.length||buildData.triggers.length)files.push(["level/build.json",JSON.stringify(buildData,null,2)]);let allUi=[...commandUi,...uis];if(allUi.length)files.push(["ui/layout.json",JSON.stringify({format:"gdhub-ui-draft-1",components:allUi},null,2)]);return {source,files,ui:allUi}}
+function bytes(s){return new TextEncoder().encode(s)}function u16(n){return [n&255,n>>>8&255]}function u32(n){return [n&255,n>>>8&255,n>>>16&255,n>>>24&255]}function join(parts){let n=parts.reduce((a,b)=>a+b.length,0),r=new Uint8Array(n),p=0;for(let x of parts){r.set(x,p);p+=x.length}return r}
+function pack(files){if(files.length>128)throw Error("Limite de 128 arquivos excedido.");let parts=[bytes("GDHB"),new Uint8Array([...u16(1),...u16(files.length)])];for(let [path,data] of files){let p=bytes(path),d=bytes(data);if(p.length>240||d.length>4*1024*1024)throw Error("Arquivo excede limite: "+path);parts.push(new Uint8Array([...u16(p.length),...u32(d.length)]),p,d)}let result=join(parts);if(result.length>16*1024*1024)throw Error("Pacote ultrapassa 16 MiB.");return result}
+function status(msg,ok){$("status").textContent=msg;$("status").className="notice "+(ok?"good":"bad")}
+$("validate").onclick=()=>{try{let x=makeEntries();$("compiled").textContent=x.source;status("DashPT válido! "+x.files.length+" arquivo(s) serão incluídos. O código compilado usa somente comandos do interpretador atual.",true);document.querySelector('[data-tab="compiled"]').click()}catch(e){status("Erro: "+e.message,false)}};
+
+function renderBuild(){$("buildPreview").textContent=JSON.stringify(buildData,null,2)}
+$("buildAdd").onclick=()=>{let id="build_"+(buildData.objects.length+buildData.groups.length+buildData.triggers.length+1),kind=$("buildKind").value;if(kind==="objeto")buildData.objects.push({id,tipo:$("buildType").value,x:Number($("buildX").value)||0,y:Number($("buildY").value)||0,propriedades:{}});else if(kind==="grupo")buildData.groups.push({id,nome:$("buildGroupName").value.trim()||"Grupo "+(buildData.groups.length+1),objetos:[]});else buildData.triggers.push({id,tipo:$("buildTrigger").value.trim()||"evento",x:Number($("buildX").value)||0,y:Number($("buildY").value)||0,alvo:null,config:{}});renderBuild()};
+$("buildSet").onclick=()=>{let id=$("buildTarget").value.trim(),key=$("buildProperty").value.trim(),raw=$("buildValue").value,o=buildData.objects.find(x=>x.id===id),t=buildData.triggers.find(x=>x.id===id);if((!o&&!t)||!key){status("Informe o ID de um objeto ou trigger e uma propriedade.",false);return}let v=raw;try{v=JSON.parse(raw)}catch{}if(o)o.propriedades[key]=v;else t.config[key]=v;renderBuild();status("Propriedade/configuração salva no rascunho.",true)};
+$("buildGroup").onclick=()=>{let name=$("buildGroupName").value.trim();if(!name){status("Informe o nome do grupo.",false);return}buildData.groups.push({id:"grupo_"+(buildData.groups.length+1),nome:name,objetos:[]});renderBuild()};
+$("buildGroupAssign").onclick=()=>{let objectId=$("buildTarget").value.trim(),groupName=$("buildGroupName").value.trim(),o=buildData.objects.find(x=>x.id===objectId),g=buildData.groups.find(x=>x.id===groupName||x.nome===groupName);if(!o||!g){status("Informe um ID de objeto existente e o nome/ID de um grupo existente.",false);return}if(!g.objetos.includes(objectId))g.objetos.push(objectId);o.propriedades.grupo=g.id;renderBuild();status("Objeto associado ao grupo.",true)};
+$("buildTriggerAdd").onclick=()=>{buildData.triggers.push({id:"trigger_"+(buildData.triggers.length+1),tipo:$("buildTrigger").value.trim()||"evento",x:Number($("buildX").value)||0,y:Number($("buildY").value)||0,alvo:$("buildTarget").value.trim()||null,config:{}});renderBuild()};
+$("buildRemove").onclick=()=>{let id=$("buildTarget").value.trim(),n=buildData.objects.length+buildData.groups.length+buildData.triggers.length;for(let k of ["objects","groups","triggers"])buildData[k]=buildData[k].filter(x=>x.id!==id);renderBuild();status(n===buildData.objects.length+buildData.groups.length+buildData.triggers.length?"ID não encontrado.":"Elemento removido.",n!==buildData.objects.length+buildData.groups.length+buildData.triggers.length)};
+$("buildClear").onclick=()=>{buildData={format:"gdhub-build-draft-1",objects:[],groups:[],triggers:[]};renderBuild()};
+function initPieces(){let all=GDHubPieces.getAll(),cats=[...new Set(all.map(x=>x.category))];$("pieceCategory").innerHTML='<option value="">Todas as categorias</option>'+cats.map(c=>'<option>'+esc(c)+'</option>').join("");function draw(){let found=GDHubPieces.search($("pieceSearch").value,$("pieceCategory").value).slice(0,100);$("pieceCount").textContent=all.length.toLocaleString("pt-BR")+" peças · "+found.length+" exibidas";$("pieceResults").innerHTML=found.map(p=>'<button class="object" data-piece="'+esc(p.id)+'"><strong>'+esc(p.label)+'</strong><span class="muted">'+esc(p.category)+' · '+esc(p.insert)+'</span></button>').join("")||"Nenhuma peça encontrada";document.querySelectorAll("[data-piece]").forEach(b=>b.onclick=()=>GDHubPieces.insertPiece(b.dataset.piece,$("source")))}$("pieceSearch").oninput=draw;$("pieceCategory").onchange=draw;draw()}
+try{initPieces()}catch(e){$("pieceCount").textContent="Erro: "+e.message}
+
+$("build").onclick=()=>{try{let x=makeEntries();let bin=pack(x.files),url=URL.createObjectURL(new Blob([bin],{type:"application/octet-stream"})),a=document.createElement("a");a.href=url;a.download=$("id").value.trim()+".gdhb";a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);$("compiled").textContent=x.source;let extras=(objects.length?"\n"+objects.length+" objeto(s) salvos como rascunho":"")+(x.ui.length?"\n"+x.ui.length+" componente(s) de UI compilados para ui/layout.json":"");status("Pacote GDHB v1 gerado: "+a.download+" ("+(bin.length/1024).toFixed(1)+" KiB).\nO script principal pode ser lido pelo runtime atual."+extras+"\nA UI é compilada e salva no pacote; ainda precisa do adaptador nativo para ser desenhada dentro do Geometry Dash.",true);document.querySelector('[data-tab="compiled"]').click()}catch(e){status("Falha na compilação: "+e.message,false)}};
 </script></body></html>
