@@ -38,6 +38,10 @@ object BaseRobTopActivity {
         me = WeakReference(activity)
     }
 
+    @JvmStatic fun clearCurrentActivity(activity: Activity) {
+        if (me.get() === activity) me.clear()
+    }
+
     @JvmStatic fun getUserID(): String {
         val activity = me.get() ?: return UUID.randomUUID().toString()
         val id = Settings.Secure.getString(activity.contentResolver, Settings.Secure.ANDROID_ID) ?: return UUID.randomUUID().toString()
@@ -95,7 +99,8 @@ object BaseRobTopActivity {
         }
     }
     @JvmStatic fun loadingFinished() {}
-    @Suppress("DEPRECATION")\n    @JvmStatic fun getDeviceRefreshRate(): Float {
+    @Suppress("DEPRECATION")
+    @JvmStatic fun getDeviceRefreshRate(): Float {
         val activity = me.get() ?: return 60f
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) activity.display?.refreshRate ?: 60f
         else activity.windowManager.defaultDisplay.refreshRate
