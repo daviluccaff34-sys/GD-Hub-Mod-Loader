@@ -22,7 +22,8 @@
 
 ## 0.2.0 — Android runtime and game integration
 - [x] Build reproducible ARM32 and ARM64 Android shared libraries with the NDK (workflow run 43384744508)
-- [x] Build and upload the companion APK artifact in CI (workflow run 43384744508)\n- [ ] Install and validate the companion APK on a physical device
+- [x] Build and upload the companion APK artifact in CI (workflow run 43384744508)
+- [ ] Install and validate the companion APK on a physical device
 - [x] Document the version-specific integration boundary and staged plan for Geometry Dash 2.2081
 - [x] Add the in-process GeometryDashActivity and Cocos2d-x OpenGL host (implemented; physical-device test pending)
 - [x] Add Cocos JNI bridge, FMOD bridge, APK/split asset resolution and native library loading order
