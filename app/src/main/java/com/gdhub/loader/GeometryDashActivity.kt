@@ -286,7 +286,7 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
         fun onNativeRuntimeReady(message: String) {
             val activity = activeActivity ?: return
             activity.runOnUiThread {
-                activity.runtimeReady = true
+                activity.runtimeReady = !message.startsWith("Runtime GD Hub falhou")
                 if (activity::output.isInitialized) activity.output.text = message
                 activity.refreshModList()
             }
