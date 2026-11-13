@@ -27,8 +27,9 @@ python3 packager/clone_apk.py \
 
 The default clone application ID is `com.gdhub.geometryjump`. The original ID
 (`com.robtopx.geometryjump`) is rejected. The script preserves the original APK,
-decodes and changes the manifest package/label, places each native library only
-in its matching ABI folder, rebuilds, zip-aligns, signs, and verifies the output.
+decodes and changes the manifest package/label, adds a startup `System.loadLibrary("gdhub_loader")`
+call to `GeometryJump.onCreate`, places each native library only in its matching ABI folder,
+rebuilds, zip-aligns, signs, and verifies the output.
 
 A new debug/test keystore is created beside the output when one is not supplied.
 Back it up securely: Android treats later builds signed with a different key as
@@ -37,7 +38,10 @@ a different signer and will not update the installed clone.
 ## Important integration limitation
 
 This is the **APK clone/repackaging stage**, not a completed in-game mod loader.
-The library is bundled in the clone but is not yet loaded by Geometry Dash. The
-verified game startup hook, Cocos2d-x adapter, in-game button/panel, and bridge
-to the GDHB runtime remain separate implementation and device-testing work.
+The packager now adds a startup load call, so the native library is loaded into the clone's
+process if Android can resolve all of its native dependencies. This is not yet a working
+in-game mod menu: the verified Cocos2d-x scene adapter, floating button/panel, and bridge
+from game UI to the GDHB package runtime still need implementation and real-device testing.
+The companion app launches only the separate clone package; it does not launch or modify the
+original Geometry Dash installation.
 Do not distribute the clone as if in-game mods already work.
