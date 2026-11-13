@@ -8,6 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_library(gdhub_loader SHARED
     loader/core/loader.cpp
     runtime/package/gdhb_reader.cpp
+    runtime/language/dash_interpreter.cpp
 )
 
 target_include_directories(gdhub_loader PUBLIC
