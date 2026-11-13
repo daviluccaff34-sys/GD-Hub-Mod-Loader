@@ -43,3 +43,7 @@ Test ARM32 and ARM64 independently on Geometry Dash 2.2081. Verify startup, scen
 This document records the design and verified target profile. The current GD Hub APK is still a companion manager. The uploaded Geometry Dash APK inspected so far is version 2.2.144, so target-2.2081 integration remains unverified. Implemented foundations now include safe-area layout calculation, a renderer-independent UI render plan, touch hit-testing, and a Cocos symbol probe. These are not a native Cocos backend: no in-game button, scene attachment, game-process loader integration, game-side package path, or live game hook has been implemented yet.
 
 Do not use guessed memory offsets, guessed function signatures, or another loader's private implementation as if they were verified GD Hub code. A Cocos UI source file alone is not proof of integration: it must be attached through a tested game adapter built against the exact 2.2081 APK.
+
+## Companion overlay interaction update
+
+The Android-hosted companion overlay launcher is now 40dp and remains draggable. Its panel is 240×260dp and can be repositioned by dragging the panel header. This is the Android host overlay, not a native Cocos scene node. Its behavior still requires physical-device verification and does not establish a verified Geometry Dash 2.2081 native adapter.
