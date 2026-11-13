@@ -33,7 +33,15 @@ public class MainActivity extends Activity {
         TextView sub=new TextView(this);sub.setText("MOD MANAGER  •  ANDROID");sub.setTextColor(MUTED);sub.setTextSize(11);sub.setLetterSpacing(.08f);names.addView(sub);brand.addView(names);root.addView(brand,new LinearLayout.LayoutParams(-1,dp(68)));
         TextView headline=new TextView(this);headline.setText("Seus pacotes. Seu controle.");headline.setTextColor(TEXT);headline.setTextSize(19);headline.setTypeface(null,Typeface.BOLD);headline.setPadding(0,dp(28),0,dp(5));root.addView(headline);
         TextView hint=new TextView(this);hint.setText("Importe e execute pacotes .GDHB compatíveis.");hint.setTextColor(MUTED);hint.setTextSize(13);root.addView(hint);
-        LinearLayout actions=new LinearLayout(this);actions.setPadding(0,dp(22),0,dp(18));
+        Button launch=button("▶  INICIAR JOGO COM MOD LOADER",0xFF6842D8);
+        launch.setTextSize(14);
+        LinearLayout.LayoutParams launchParams=new LinearLayout.LayoutParams(-1,dp(54));
+        launchParams.topMargin=dp(22);
+        launchParams.bottomMargin=dp(10);
+        root.addView(launch,launchParams);
+        launch.setOnClickListener(v->launchGeometryDash());
+
+        LinearLayout actions=new LinearLayout(this);actions.setPadding(0,dp(8),0,dp(18));
         Button add=button("+  Importar pacote",PURPLE);add.setOnClickListener(v->pickPackage());actions.addView(add,new LinearLayout.LayoutParams(0,dp(52),1));
         Button refresh=button("↻",PANEL);refresh.setOnClickListener(v->scanPackages());LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(dp(58),dp(52));rp.leftMargin=dp(9);actions.addView(refresh,rp);root.addView(actions);
         LinearLayout summary=new LinearLayout(this);summary.setOrientation(1);summary.setPadding(dp(16),dp(13),dp(16),dp(13));summary.setBackground(box(PANEL,14));
@@ -57,5 +65,20 @@ public class MainActivity extends Activity {
             LinearLayout row=new LinearLayout(this);Button run=button("Validar e executar",PURPLE);run.setOnClickListener(v->runPackage(file));row.addView(run,new LinearLayout.LayoutParams(0,dp(44),1));
             Button del=button("Remover",0xFF30202D);del.setTextColor(0xFFFFA6B5);del.setOnClickListener(v->{if(file.delete())scanPackages();else status.setText("Não foi possível remover.");});LinearLayout.LayoutParams deleteParams=new LinearLayout.LayoutParams(dp(100),dp(44));deleteParams.leftMargin=dp(8);row.addView(del,deleteParams);card.addView(row);
         }}
+    private void launchGeometryDash(){
+        final String gamePackage="com.robtopx.geometryjump";
+        try{
+            Intent launch=getPackageManager().getLaunchIntentForPackage(gamePackage);
+            if(launch==null){
+                status.setText("Geometry Dash não encontrado. Instale o jogo oficial primeiro.");
+                return;
+            }
+            launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            status.setText("Abrindo Geometry Dash… O botão ainda não injeta o loader: a integração dentro do jogo está em desenvolvimento.");
+            startActivity(launch);
+        }catch(Exception e){
+            status.setText("Não foi possível iniciar o Geometry Dash: "+e.getMessage());
+        }
+    }
     private void runPackage(File file){try{status.setText(nativeRunPackage(file.getAbsolutePath()));}catch(Throwable e){status.setText("Erro no runtime nativo: "+e.getMessage());}}
 }
