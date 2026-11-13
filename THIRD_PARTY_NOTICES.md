@@ -16,6 +16,11 @@ The following source files were adapted from the Geode Android Launcher:
 - `AudioDevice.kt`
 - `MediaCodec.kt`
 - `JniToCpp.kt`
+- `launcher-fix.cpp`
+- `patcher.cpp`
+- `base.h` (launcher-fix support)
+
+The upstream patcher is adapted to bind JNI methods to `com.gdhub.loader.LauncherFix`; the logging wrapper is GD Hub-specific.
 
 The GD Hub host Activity, Cocos2d-x surface view, helper, runtime bridge and UI overlay are GD Hub-specific implementations. Adapted files retain their upstream package names where required by Geometry Dash JNI compatibility. The upstream project license and notices are preserved here.
 
