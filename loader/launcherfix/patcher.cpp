@@ -61,7 +61,7 @@ constexpr std::uint32_t elfhash(std::string_view name) {
     return h;
 }
 
-constexpr std::array<const std::uint8_t, 3> SYMBOL_PATCH_VALUE{':', '3', '\\0'};
+constexpr std::array<const std::uint8_t, 3> SYMBOL_PATCH_VALUE{':', '3', '\0'};
 
 bool patch_symbol(std::uint32_t* hash_table, char* str_table, ElfW(Sym)* sym_table, const std::string_view orig_name) {
     auto hash = elfhash(orig_name);
@@ -82,14 +82,14 @@ bool patch_symbol(std::uint32_t* hash_table, char* str_table, ElfW(Sym)* sym_tab
 
                 log::debug("Disabling symbol at {} ({})", reinterpret_cast<void*>(sym_name), sym_name);
 
-                if (!set_mprotect(reinterpret_cast<std::uintptr_t>(sym_name), SYMBOL_PATCH_VALUE.size(), PROT_READ | PROT_WRITE)) {
+constexpr std::array<const std::uint8_t, 3> SYMBOL_PATCH_VALUE{':', '3', '\0'};
                     log::warn("failed to patch symbol: could not set writable flag");
                     return false;
                 }
 
-                memcpy(sym_name, SYMBOL_PATCH_VALUE.data(), SYMBOL_PATCH_VALUE.size());
+constexpr std::array<const std::uint8_t, 3> SYMBOL_PATCH_VALUE{':', '3', '\0'};
 
-                if (!set_mprotect(reinterpret_cast<std::uintptr_t>(sym_name), SYMBOL_PATCH_VALUE.size(), PROT_READ)) {
+constexpr std::array<const std::uint8_t, 3> SYMBOL_PATCH_VALUE{':', '3', '\0'};
                     log::warn("failed to patch symbol: could not remove writable flag");
                     return false;
                 }
