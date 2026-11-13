@@ -55,7 +55,7 @@ public class MainActivity extends Activity {
             TextView name=new TextView(this);name.setText("▣  "+file.getName());name.setTextColor(TEXT);name.setTextSize(14);name.setTypeface(null,Typeface.BOLD);card.addView(name);
             TextView meta=new TextView(this);meta.setText("PACOTE GDHB  •  ARMAZENADO NO APP");meta.setTextColor(MUTED);meta.setTextSize(10);meta.setPadding(0,dp(5),0,dp(12));card.addView(meta);
             LinearLayout row=new LinearLayout(this);Button run=button("Validar e executar",PURPLE);run.setOnClickListener(v->runPackage(file));row.addView(run,new LinearLayout.LayoutParams(0,dp(44),1));
-            Button del=button("Remover",0xFF30202D);del.setTextColor(0xFFFFA6B5);del.setOnClickListener(v->{if(file.delete())scanPackages();else status.setText("Não foi possível remover.");});LinearLayout.LayoutParams dp=new LinearLayout.LayoutParams(dp(100),dp(44));dp.leftMargin=dp(8);row.addView(del,dp);card.addView(row);
+            Button del=button("Remover",0xFF30202D);del.setTextColor(0xFFFFA6B5);del.setOnClickListener(v->{if(file.delete())scanPackages();else status.setText("Não foi possível remover.");});LinearLayout.LayoutParams deleteParams=new LinearLayout.LayoutParams(dp(100),dp(44));deleteParams.leftMargin=dp(8);row.addView(del,deleteParams);card.addView(row);
         }}
     private void runPackage(File file){try{status.setText(nativeRunPackage(file.getAbsolutePath()));}catch(Throwable e){status.setText("Erro no runtime nativo: "+e.getMessage());}}
 }
