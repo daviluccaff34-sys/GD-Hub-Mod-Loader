@@ -62,14 +62,18 @@ Geode Android Launcher's version map identifies Android `versionCode 41` as Geom
 - [x] Add Studio catalog page to list approved mods, submit GDHB packages, download approved packages and moderate pending submissions.
 - [x] Publish the Studio as Worker `gdhub-studio` at `https://gdhub-studio.daviluccaff34.workers.dev/`; workers.dev enabled.
 - [x] Set the catalog UI default API URL to the deployed catalog Worker; its KV `MODS` binding is present.
+- [x] Add a public `/health` route to the catalog Worker and a **Testar Worker** button in the catalog page.
 - [ ] Verify live HTTP requests from a normal browser; this execution environment blocks direct requests to workers.dev.
 - [ ] Add/configure `ADMIN_TOKEN` secret in Cloudflare Dashboard; secret-write action was blocked by security controls, so no token was created.
 - [ ] Test real upload, pending review, approval, listing and download after the secret is configured.
 - [ ] Implement native runtime parsing for `level/build.json`, object/group/trigger actions and safe permission enforcement.
 - [ ] Implement verified Cocos2d-x adapter for Geometry Dash 2.2081.
 - [x] Native CMake/CTest and ARM32/ARM64 shared-library jobs passed on workflow run 43499235355.
-- [ ] Finish Android companion APK build in workflow run 43499235355 and download/test it.
-- [ ] Run browser tests and physical-device validation before declaring version 1.00.0 released.
+- [x] Finish Android companion APK build in workflow run 43499235355; artifact `GD-Hub-Android-APK` created.
+- [ ] Install and test the APK on the physical Galaxy A04s.
+- [x] Build the companion debug APK with ARM32/ARM64 native libraries in workflow run 43499235355 (all four jobs succeeded).
+- [ ] Install and test that APK on a physical Android device; CI cannot verify startup against the installed Geometry Dash build.
+- [ ] Run browser-level catalog tests and complete native Geometry Dash integration before declaring version 1.00.0 released.
 
 The code-piece and construction editors are authoring/export tools. They do not imply that all tokens are executable game functions. Native game integration remains a separate unfinished milestone.
 
