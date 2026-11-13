@@ -12,21 +12,17 @@ This folder contains the public mod-catalog API Worker.
 
 ## Enable storage
 
-1. Open the Cloudflare Dashboard.
-2. Open **Workers KV** and no additional R2 setup is required; the catalog uses Workers KV.
-3. The `GDHUB_MOD_CATALOG` KV namespace is created and bound to the Worker.
-4. Create/deploy a Worker using `mod-catalog-worker.js`.
-5. Add a KV binding named `MODS` pointing to `GDHUB_MOD_CATALOG`.
-6. Add a Worker secret named `ADMIN_TOKEN` with a long random value. Keep it private; it is used only for moderation.
-7. Deploy the Worker and note its HTTPS `workers.dev` URL.
+1. The KV namespace and Worker are already created and deployed.
+2. In Cloudflare Dashboard, open **Workers & Pages** → `gdhub-mod-catalog` → **Settings** → **Variables and Secrets**.
+3. Add a secret named `ADMIN_TOKEN` with a long random value. Keep it private; it is used only for moderation.
 
-The app uses the Worker base URL at build time:
+The app's GitHub Actions build now embeds the deployed Worker URL. For a local build, set the same URL at build time:
 
 ```sh
 gradle assembleDebug -PgdhubPublishApi=https://YOUR-WORKER.YOUR-SUBDOMAIN.workers.dev
 ```
 
-Do not put `ADMIN_TOKEN` in the Android app or repository.
+Do not put `ADMIN_TOKEN` in the Android app or repository. Until that secret is added, submissions can be uploaded as pending, but the moderation endpoints remain unavailable.
 
 ## API
 
