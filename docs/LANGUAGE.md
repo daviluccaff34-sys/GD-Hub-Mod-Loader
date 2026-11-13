@@ -97,7 +97,6 @@ end
 - Listas e mapas.
 - Operações matemáticas completas.
 - Eventos do jogo.
-- Interface e botões.
 - Triggers e ações do editor.
 - Módulos e importações.
 - API de Geometry Dash com permissões.
@@ -110,9 +109,10 @@ Os 1.200 identificadores do dicionário são vocabulário de referência. Eles n
 2. O empacotador reúne o manifesto e os fontes em um `.gdhb`.
 3. O leitor valida o contêiner.
 4. O runtime entrega `src/main.dash` ao interpretador.
-5. O interpretador executa apenas os recursos disponíveis nesta versão.
+5. O interpretador executa os recursos disponíveis nesta versão.
+6. Instruções `ui` são convertidas em elementos visuais sobre a superfície do jogo hospedado.
 
-Nenhuma ação dentro do Geometry Dash é realizada ainda: a API do jogo depende de uma camada de integração futura.
+A camada `ui` ainda não cria nós Cocos2d-x nem objetos de fase. A API para blocos, portais, triggers e ações reais do Geometry Dash depende de um adapter específico e verificado.
 
 ## Interface gerada pelo DashCode
 
