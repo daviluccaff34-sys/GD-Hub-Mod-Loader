@@ -39,7 +39,7 @@ O pacote gerado é reconhecido pelo leitor GDHB e o script principal usa a lingu
 
 ## Cloudflare: catálogo e Worker
 
-O Studio e o catálogo estão publicados como Workers separados, sem conexão com o repositório GitHub. O catálogo já tem o binding KV `MODS` configurado. Para habilitar aprovação de envios, configure o segredo `ADMIN_TOKEN` seguindo `cloudflare/DEPLOYMENT.md`.
+O Studio e o catálogo estão publicados como Workers separados, sem conexão com o repositório GitHub. A página do catálogo inclui o botão **Testar Worker**, que consulta `/health` e informa se a moderação está configurada. O catálogo já tem o binding KV `MODS` configurado. Para habilitar aprovação de envios, configure o segredo `ADMIN_TOKEN` seguindo `cloudflare/DEPLOYMENT.md`.
 
 ### O que precisa conectar (e o que não precisa)
 
