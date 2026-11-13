@@ -15,3 +15,18 @@ O Mod Creator exporta `level/build.json` no formato `gdhub-build-draft-1`: objet
 
 ## Limite técnico
 Esta entrega implementa a biblioteca, busca, inserção, registro de extensões, editor de construção e exportação JSON. Ela **não** implementa 3.420 funções nativas do jogo nem executa objetos/triggers dentro de Geometry Dash. O runtime C++ atual não lê `level/build.json`; o adaptador nativo específico para GD 2.2081 ainda precisa converter esses dados em objetos reais e usar APIs verificadas do editor/engine na thread correta. Até essa etapa e os testes no jogo, a construção é um rascunho exportável.
+
+## JavaScript construction API
+
+`studio/construction-api.js` exposes `window.GDHubBuild`:
+- `reset()` creates an empty draft.
+- `createObject(state, {id,tipo,x,y})` inserts an object.
+- `setObjectProperty(state, id, key, value)` changes a property.
+- `createGroup(state, {id,nome})` creates a group.
+- `addToGroup(state, groupIdOrName, objectId)` associates an object with a group.
+- `createTrigger(state, {id,tipo,x,y,alvo})` creates a trigger.
+- `configureTrigger(state, id, key, value)` configures a trigger.
+- `remove(state, id)` removes an object, group or trigger and removes stale group references.
+- `getData(state)` returns a deep copy for serialization.
+
+Both browser APIs are authoring APIs. The current native runtime still does not execute these construction operations in the game.
