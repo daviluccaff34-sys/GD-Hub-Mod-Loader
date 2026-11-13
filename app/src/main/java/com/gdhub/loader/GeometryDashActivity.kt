@@ -334,15 +334,17 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
             }
         }
 
+        val generateLabel = buttons.firstOrNull { it.contains("Gerar", ignoreCase = true) } ?: "Gerar blocos"
+        val closeLabel = buttons.firstOrNull { it.contains("Fechar", ignoreCase = true) } ?: "Fechar"
         val message = buildString {
-            labels.forEach { append(it).append("\\n\\n") }
+            labels.forEach { append(it).append("\n\n") }
             append("A criação de objetos reais depende da integração nativa com o editor do Geometry Dash.")
         }
         val dialog = AlertDialog.Builder(this)
             .setTitle(title)
             .setMessage(message)
-            .setPositiveButton("Gerar blocos", null)
-            .setNegativeButton("Fechar", null)
+            .setPositiveButton(generateLabel, null)
+            .setNegativeButton(closeLabel, null)
             .create()
         dialog.setOnShowListener {
             // Keep the requested control visible, but do not pretend to create
