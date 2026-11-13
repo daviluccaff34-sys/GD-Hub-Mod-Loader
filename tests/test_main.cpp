@@ -2,11 +2,47 @@
 #include "runtime/package/gdhb_reader.hpp"
 #include "runtime/mod_runtime.hpp"
 #include "runtime/c_api/gdhub_c_api.h"
+#include "loader/game/game_ui_bridge.hpp"
 #include <cstdio>
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
+
+
+class TestGameUiHost final : public gdhub::game::GameUiHost {
+public:
+    bool on_game_thread = true;
+    bool button_created = false;
+    bool panel_visible = false;
+    std::function<void()> tap;
+    std::function<void(const std::string&, bool)> toggle;
+    std::function<void()> close;
+    std::vector<gdhub::game::ModEntry> shown;
+    bool is_game_thread() const override { return on_game_thread; }
+    bool create_floating_button(std::function<void()> callback) override {
+        button_created = true; tap = std::move(callback); return true;
+    }
+    void show_mod_panel(const std::vector<gdhub::game::ModEntry>& mods,
+                        std::function<void(const std::string&, bool)> on_toggle,
+                        std::function<void()> on_close) override {
+        panel_visible = true; shown = mods; toggle = std::move(on_toggle); close = std::move(on_close);
+    }
+    void refresh_mod_panel(const std::vector<gdhub::game::ModEntry>& mods) override { shown = mods; }
+    void hide_mod_panel() override { panel_visible = false; }
+};
+
+class TestModCatalog final : public gdhub::game::ModCatalog {
+public:
+    bool enabled = false;
+    std::vector<gdhub::game::ModEntry> list_mods() override {
+        return {{"demo.ui", "UI Demo", enabled}};
+    }
+    bool set_enabled(const std::string& id, bool value) override {
+        if (id != "demo.ui") return false;
+        enabled = value; return true;
+    }
+};
 
 static bool check(bool value, const char* label) {
     if (!value) std::cerr << "FAIL: " << label << '\n';
@@ -133,6 +169,29 @@ int main() {
         out.put('x');
     }
     ok &= check(!reader.inspect(bad_path, info), "GDHB rejects directory traversal paths");
+
+    TestGameUiHost ui_host;
+    TestModCatalog mod_catalog;
+    gdhub::game::GameUiBridge ui_bridge(ui_host, mod_catalog);
+    ok &= check(ui_bridge.initialize() && ui_host.button_created,
+                "game UI bridge creates floating-button callback on game thread");
+    if (ui_host.tap) ui_host.tap();
+    ok &= check(ui_bridge.panel_open() && ui_host.panel_visible &&
+                ui_host.shown.size() == 1 && ui_host.shown[0].id == "demo.ui",
+                "floating-button callback opens panel with catalog entries");
+    if (ui_host.toggle) ui_host.toggle("demo.ui", true);
+    ok &= check(mod_catalog.enabled && ui_host.shown[0].enabled,
+                "panel toggle updates catalog and refreshes actual enabled state");
+    if (ui_host.close) ui_host.close();
+    ok &= check(!ui_bridge.panel_open() && !ui_host.panel_visible,
+                "panel close callback hides panel");
+    TestGameUiHost wrong_thread_host;
+    wrong_thread_host.on_game_thread = false;
+    TestModCatalog wrong_thread_catalog;
+    gdhub::game::GameUiBridge wrong_thread_bridge(wrong_thread_host, wrong_thread_catalog);
+    ok &= check(!wrong_thread_bridge.initialize() && !wrong_thread_host.button_created,
+                "game UI bridge refuses initialization outside game thread");
+
     std::remove(invalid_json_path.c_str());
     std::remove(nested_key_path.c_str());
     std::remove(duplicate_key_path.c_str());
