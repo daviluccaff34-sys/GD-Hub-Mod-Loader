@@ -260,7 +260,7 @@ public class MainActivity extends Activity {
             enabled.setOnCheckedChangeListener((button,checked)->modPrefs.edit().putBoolean(file.getName(),checked).apply());card.addView(enabled);
             LinearLayout row=new LinearLayout(this);Button run=button("Validar e executar",PURPLE);run.setOnClickListener(v->runPackage(file));row.addView(run,new LinearLayout.LayoutParams(0,dp(42),1));
             Button del=button("Remover",0xFF30202D);del.setTextColor(0xFFFFA6B5);del.setOnClickListener(v->{if(file.delete())scanPackages();else status.setText("Não foi possível remover.");});
-            LinearLayout.LayoutParams dp=new LinearLayout.LayoutParams(dp(92),dp(42));dp.leftMargin=dp(8);row.addView(del,dp);card.addView(row);
+            LinearLayout.LayoutParams deleteParams=new LinearLayout.LayoutParams(dp(92),dp(42));deleteParams.leftMargin=dp(8);row.addView(del,deleteParams);card.addView(row);
         }
     }
 
