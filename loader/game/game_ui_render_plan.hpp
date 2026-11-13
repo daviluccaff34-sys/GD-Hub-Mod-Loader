@@ -3,6 +3,7 @@
 #include "loader/game/game_ui_bridge.hpp"
 #include "loader/game/game_ui_layout.hpp"
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -27,7 +28,7 @@ enum class UiDrawKind {
 };
 
 enum class UiHitAction {
-    OpenPanel,
+    TogglePanel,
     ClosePanel,
     ToggleMod
 };
@@ -45,7 +46,7 @@ struct UiDrawItem {
 };
 
 struct UiHitTarget {
-    UiHitAction action = UiHitAction::OpenPanel;
+    UiHitAction action = UiHitAction::TogglePanel;
     Rect bounds;
     std::string mod_id;
 };
@@ -55,11 +56,14 @@ struct GameUiRenderPlan {
     std::vector<UiHitTarget> hit_targets;
 };
 
-// Produces renderer-independent drawing and hit-test instructions. A verified
-// Cocos adapter may translate these into Cocos nodes on the game thread.
 GameUiRenderPlan build_game_ui_render_plan(
     const GameUiLayout& layout,
     bool panel_open,
     const std::vector<ModEntry>& mods);
+
+// Coordinates use the same bottom-left origin as GameUiLayout. Later targets
+// are tested first so close/toggle controls take priority over background UI.
+std::optional<UiHitTarget> hit_test_game_ui(
+    const GameUiRenderPlan& plan, float x, float y);
 
 } // namespace gdhub::game
