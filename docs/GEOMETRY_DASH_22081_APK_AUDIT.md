@@ -47,3 +47,23 @@ These findings establish that the supplied APK packages a Cocos2d-based native g
 ## Next engineering task
 
 Inspect dynamic symbols and the Java/native startup path, then define a version-specific adapter boundary. Only after a safe, verified load point is identified should the native Cocos view implementation be added.
+
+## Dynamic symbol-table verification
+
+The two `libcocos2dcpp.so` files were also inspected with the ELF dynamic symbol table (not only printable strings). The following Cocos symbols are present as dynamic function symbols in both ABIs:
+
+- `_ZN7cocos2d10CCDirector14sharedDirectorEv` — `CCDirector::sharedDirector()`
+- `_ZN7cocos2d6CCNode8addChildEPS0_` — `CCNode::addChild(CCNode*)`
+- `_ZN7cocos2d6CCNode11setPositionEff` — `CCNode::setPosition(float, float)`
+- `_ZN7cocos2d6CCNode8setScaleEf` — `CCNode::setScale(float)`
+- `_ZN7cocos2d6CCNode26removeFromParentAndCleanupEb` — `CCNode::removeFromParentAndCleanup(bool)`
+- `_ZN7cocos2d8CCSprite6createEPKc` — `CCSprite::create(char const*)`
+- `_ZN7cocos2d13CCLabelBMFont6createEPKcS2_` — `CCLabelBMFont::create(char const*, char const*)`
+
+The scene delegate method `_ZN7cocos2d15CCSceneDelegate17willSwitchToSceneEPNS_7CCSceneE` is also present as a weak dynamic symbol in both ABI libraries. This does not by itself establish that replacing or intercepting it is safe.
+
+## GD Hub symbol probe
+
+Added `loader/game/cocos_runtime_symbols.hpp/.cpp`. On Android it checks whether the game's already-loaded `libcocos2dcpp.so` can be found with `RTLD_NOLOAD`, then resolves the verified dynamic symbols from that library handle. It does not load a second Cocos runtime, call any game functions, create nodes, or install hooks. It reports readiness only when the required symbols are present.
+
+The symbol probe has host-side tests using a fake resolver. The Android build must still confirm that the target NDK supports the no-load probe and that the library is visible in the cloned game's linker namespace.
