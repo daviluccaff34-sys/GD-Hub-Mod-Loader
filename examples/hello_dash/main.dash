@@ -1,3 +1,8 @@
 # Hello Dash — exemplo básico do GD Hub
 make player = "Cube"
 say "Olá, {player}! Bem-vindo ao GD Hub."
+
+# Interface exibida sobre o jogo
+ui title "Hello Dash"
+ui label "Olá, {player}! Esta interface foi criada pelo DashCode."
+ui button "Continuar"
