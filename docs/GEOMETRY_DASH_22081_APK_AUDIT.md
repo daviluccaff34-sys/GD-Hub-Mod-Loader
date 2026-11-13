@@ -1,6 +1,8 @@
-# Geometry Dash 2.2081 APK: native-library audit
+# Uploaded Geometry Dash APK audit — version mismatch found
 
 This audit was performed against the user-provided APK in the current conversation. The APK itself is not copied into this repository.
+
+> **Important correction:** the uploaded APK is **not identified as Geometry Dash 2.2081**. Its Android manifest reports versionName `2.2.144` and versionCode `41`. Therefore, every native-library observation below applies to the uploaded **2.2.144** APK only. Do not treat these symbols or the Cocos probe as verified compatibility with 2.2081. A matching 2.2081 APK is required before implementing the version-specific game adapter.
 
 ## Verified archive contents
 
@@ -34,7 +36,7 @@ The native libraries contain strings/symbol names for:
 - `cocos2d::CCObject::retain()`
 - Cocos Android renderer JNI entry points.
 
-These findings establish that the supplied APK packages a Cocos2d-based native game library for both ABIs. A string match alone does not prove that a symbol is exported or safe to call; dynamic symbol-table inspection and exact ABI/signature validation are still required.
+These findings establish that the supplied 2.2.144 APK packages a Cocos2d-based native game library for both ABIs. A string match alone does not prove that a symbol is exported or safe to call; dynamic symbol-table inspection and exact ABI/signature validation are still required.
 
 ## Integration consequences
 
@@ -50,7 +52,7 @@ Inspect dynamic symbols and the Java/native startup path, then define a version-
 
 ## Dynamic symbol-table verification
 
-The two `libcocos2dcpp.so` files were also inspected with the ELF dynamic symbol table (not only printable strings). The following Cocos symbols are present as dynamic function symbols in both ABIs:
+The two `libcocos2dcpp.so` files from the uploaded 2.2.144 APK were also inspected with the ELF dynamic symbol table (not only printable strings). The following Cocos symbols are present as dynamic function symbols in both ABIs:
 
 - `_ZN7cocos2d10CCDirector14sharedDirectorEv` — `CCDirector::sharedDirector()`
 - `_ZN7cocos2d6CCNode8addChildEPS0_` — `CCNode::addChild(CCNode*)`
@@ -67,3 +69,25 @@ The scene delegate method `_ZN7cocos2d15CCSceneDelegate17willSwitchToSceneEPNS_7
 Added `loader/game/cocos_runtime_symbols.hpp/.cpp`. On Android it checks whether the game's already-loaded `libcocos2dcpp.so` can be found with `RTLD_NOLOAD`, then resolves the verified dynamic symbols from that library handle. It does not load a second Cocos runtime, call any game functions, create nodes, or install hooks. It reports readiness only when the required symbols are present.
 
 The symbol probe has host-side tests using a fake resolver. The Android build must still confirm that the target NDK supports the no-load probe and that the library is visible in the cloned game's linker namespace.
+
+## Android manifest and startup path
+
+Decoded from the uploaded APK's binary Android manifest and DEX class definitions:
+
+- Package: `com.robtopx.geometryjump`.
+- Manifest version name: `2.2.144`.
+- Manifest version code: `41`.
+- Minimum Android SDK: `23`.
+- Target Android SDK: `35`.
+- Launcher activity: `com.robtopx.geometryjump.GeometryJump`.
+- DEX superclass: `org.cocos2dx.lib.Cocos2dxActivity`.
+- Application metadata `android.app.lib_name`: `cocos2dcpp`.
+- The DEX contains the Cocos2d Android Java runtime classes, including `Cocos2dxActivity`, `Cocos2dxGLSurfaceView`, and `Cocos2dxRenderer`.
+
+Both native libraries export `JNI_OnLoad` and Cocos renderer JNI functions including `nativeInit`, `nativeRender`, `nativeOnResume`, `nativeTouchesBegin`, `nativeTouchesEnd`, and `nativeTouchesCancel`. The ARM64 library also exports several Java JNI callbacks for `com.customRobTop.JniToCpp`.
+
+## Important hook warning
+
+`CCSceneDelegate::willSwitchToScene(CCScene*)` appears as a **weak** dynamic symbol with a very small symbol size in both uploaded libraries (4 bytes in ARM64 and 2 bytes in ARM32). This is not evidence of a usable scene hook. Do not patch or replace it based on the symbol name alone.
+
+The verified exported Cocos functions are useful for compatibility research, but their presence does not prove a safe initialization point, thread context, ownership rules, or ABI-compatible C++ declarations. No native function is called by the current symbol probe.
