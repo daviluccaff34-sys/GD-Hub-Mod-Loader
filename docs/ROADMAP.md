@@ -46,4 +46,4 @@
 
 ## Geometry Dash APK identity warning
 
-The APK uploaded for native inspection reports manifest versionName `2.2.144` and versionCode `41`. Do not infer target compatibility from the display version alone: confirm the exact package build and its native ABI before writing the version-specific adapter.
+Geode Android Launcher's version map identifies Android `versionCode 41` as Geometry Dash `2.2081`. The Android manifest's `versionName` may show `2.2.144`; use the version-code mapping, not that string alone, for target identification.
