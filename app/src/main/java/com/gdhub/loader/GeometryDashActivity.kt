@@ -73,7 +73,7 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
     }
 
     private fun attachGameAssets(info: PackageInfo) {
-        val addAssetPath = assets.javaClass.getMethod("addAssetPath", String::class.java)
+        val addAssetPath = assets.javaClass.getDeclaredMethod("addAssetPath", String::class.java)
         val app = info.applicationInfo!!
         addAssetPath.invoke(assets, app.sourceDir)
         app.splitSourceDirs?.forEach { addAssetPath.invoke(assets, it) }
