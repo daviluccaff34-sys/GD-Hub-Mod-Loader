@@ -81,13 +81,13 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
             setBootStage("Aplicando patches de compatibilidade")
             LauncherFix.performPatches()
 
+            BaseRobTopActivity.setCurrentActivity(this)
+            BaseRobTopActivity.isPaused = false
             setBootStage("Configurando caminho do APK")
             Cocos2dxHelper.nativeSetApkPath(info.applicationInfo!!.sourceDir)
             runCatching {
                 JniToCpp.setupHSSAssets(info.applicationInfo!!.sourceDir, Environment.getExternalStorageDirectory().absolutePath)
             }.onFailure { Log.w("GDHub", "HSS asset setup was not available", it) }
-            BaseRobTopActivity.setCurrentActivity(this)
-            BaseRobTopActivity.isPaused = false
             setBootStage("Criando superfície OpenGL")
             createGameSurface()
         } catch (error: Throwable) {
