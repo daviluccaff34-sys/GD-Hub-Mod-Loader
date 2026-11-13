@@ -6,12 +6,15 @@ android {
     namespace 'com.gdhub.loader'
     compileSdk 35
 
+    buildFeatures { buildConfig true }
+
     defaultConfig {
         applicationId 'com.gdhub.loader'
         minSdk 23
         targetSdk 35
         versionCode 1
-        versionName '0.1.0-alpha'
+        versionName '0.2.0-alpha'
+        buildConfigField 'String', 'GDHUB_PUBLISH_API', '\"\"'
         ndk {
             abiFilters 'armeabi-v7a', 'arm64-v8a'
         }
