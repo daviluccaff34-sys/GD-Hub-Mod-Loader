@@ -60,10 +60,13 @@ object BaseRobTopActivity {
     }
 
     @JvmStatic fun openURL(url: String) {
-        me.get()?.runOnUiThread {
+        val activity = me.get() ?: return
+        activity.runOnUiThread {
             runCatching {
-                it.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-            }.onFailure { error -> Toast.makeText(it, error.message ?: "Não foi possível abrir o link", Toast.LENGTH_SHORT).show() }
+                activity.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+            }.onFailure { error ->
+                Toast.makeText(activity, error.message ?: "Não foi possível abrir o link", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -82,18 +85,20 @@ object BaseRobTopActivity {
     }
 
     @JvmStatic fun sendMail(subject: String, body: String, to: String) {
-        me.get()?.runOnUiThread {
+        val activity = me.get() ?: return
+        activity.runOnUiThread {
             val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:$to"))
                 .putExtra(Intent.EXTRA_SUBJECT, subject)
                 .putExtra(Intent.EXTRA_TEXT, body)
-            runCatching { it.startActivity(intent) }
+            runCatching { activity.startActivity(intent) }
         }
     }
 
     @JvmStatic fun shouldResumeSound(): Boolean = resumeSound
     @JvmStatic fun setKeyboardState(value: Boolean) { keyboardActive = value }
     @JvmStatic fun onToggleKeyboard() {
-        me.get()?.runOnUiThread {
+        val activity = me.get() ?: return
+        activity.runOnUiThread {
             if (keyboardActive) Cocos2dxGLSurfaceView.openIMEKeyboard()
             else Cocos2dxGLSurfaceView.closeIMEKeyboard()
         }
