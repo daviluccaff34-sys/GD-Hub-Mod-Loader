@@ -56,6 +56,14 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
             Cocos2dxHelper.init(this, this)
             loadGameLibrary(info, "fmod")
             loadGameLibrary(info, "cocos2dcpp")
+
+            val saveDirectory = File(filesDir, "gdhub/save").apply { mkdirs() }
+            LauncherFix.setOriginalDataPath("/data/data/$gamePackage")
+            LauncherFix.setDataPath(saveDirectory.absolutePath)
+            val gameVersionCode = if (android.os.Build.VERSION.SDK_INT >= 28) info.longVersionCode else info.versionCode.toLong()
+            if (gameVersionCode >= 39L) LauncherFix.enableExceptionsRenaming()
+            LauncherFix.performPatches()
+
             Cocos2dxHelper.nativeSetApkPath(info.applicationInfo!!.sourceDir)
             runCatching {
                 JniToCpp.setupHSSAssets(info.applicationInfo!!.sourceDir, Environment.getExternalStorageDirectory().absolutePath)
