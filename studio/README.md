@@ -59,3 +59,6 @@ O Mod Creator gera os pacotes no próprio navegador, então não precisa de API,
 
 ## Catálogo e publicação
 Abra `catalogo.html`. Informe a URL HTTPS do Worker Cloudflare implantado, carregue mods aprovados, publique um `.gdhb` e, se for administrador, revise envios pendentes. A URL é salva no armazenamento local do navegador. O token administrativo fica apenas no campo da sessão e não é persistido. O Worker precisa estar implantado com binding KV `MODS`; para moderação, configure o segredo `ADMIN_TOKEN`. O navegador deve permitir CORS para a origem do Pages.
+
+### Construction JavaScript API
+`construction-api.js` exports `GDHubBuild` with createObject, setObjectProperty, createGroup, addToGroup, createTrigger, configureTrigger, remove, reset and getData. The editor uses this API to create the exported draft. It does not call native Geometry Dash functions.
