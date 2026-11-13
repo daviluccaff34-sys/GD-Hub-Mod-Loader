@@ -7,6 +7,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.content.SharedPreferences;
 import android.view.Gravity;
 import android.widget.*;
 import java.io.*;
@@ -17,12 +18,14 @@ public class MainActivity extends Activity {
     private LinearLayout list;
     private TextView status;
     private final ArrayList<File> packages=new ArrayList<>();
+    private SharedPreferences modPrefs;
+    private static final String PREFS_MODS="gdhub_mod_states";
     static { System.loadLibrary("gdhub_loader"); }
     private native String nativeRunPackage(String absolutePath);
     private int dp(int n){return (int)(n*getResources().getDisplayMetrics().density+0.5f);}
     private GradientDrawable box(int color,int radius){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(dp(radius));return d;}
     private Button button(String text,int color){Button b=new Button(this);b.setText(text);b.setAllCaps(false);b.setTextSize(14);b.setTypeface(Typeface.DEFAULT_BOLD);b.setTextColor(Color.WHITE);b.setBackground(box(color,13));b.setMinHeight(0);b.setMinimumHeight(0);return b;}
-    public void onCreate(Bundle state){super.onCreate(state);buildUi();scanPackages();}
+    public void onCreate(Bundle state){super.onCreate(state);modPrefs=getSharedPreferences(PREFS_MODS,MODE_PRIVATE);buildUi();scanPackages();}
     private void buildUi(){
         ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setBackgroundColor(BG);
         LinearLayout root=new LinearLayout(this);root.setOrientation(1);root.setPadding(dp(22),dp(24),dp(22),dp(22));scroll.addView(root);
@@ -54,7 +57,7 @@ public class MainActivity extends Activity {
     private void pickPackage(){Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT);i.addCategory(Intent.CATEGORY_OPENABLE);i.setType("*/*");startActivityForResult(i,PICK_PACKAGE);}
     protected void onActivityResult(int request,int result,Intent data){super.onActivityResult(request,result,data);if(request!=PICK_PACKAGE||result!=RESULT_OK||data==null)return;Uri uri=data.getData();if(uri==null)return;
         File dir=new File(getFilesDir(),"mods");if(!dir.exists()&&!dir.mkdirs()){status.setText("Não foi possível criar a pasta.");return;}
-        File dest=new File(dir,"imported_"+System.currentTimeMillis()+".gdhb");
+        String pickedName="package_"+System.currentTimeMillis()+".gdhb";\n        try(android.database.Cursor cursor=getContentResolver().query(uri,new String[]{android.provider.OpenableColumns.DISPLAY_NAME},null,null,null)){if(cursor!=null&&cursor.moveToFirst()){String candidate=cursor.getString(0);if(candidate!=null&&candidate.toLowerCase().endsWith(".gdhb"))pickedName=candidate.replaceAll("[^A-Za-z0-9._-]","_");}}catch(Exception ignored){}\n        File dest=new File(dir,pickedName);\n        if(dest.exists())dest=new File(dir,System.currentTimeMillis()+"_"+pickedName);
         try(InputStream in=getContentResolver().openInputStream(uri);FileOutputStream out=new FileOutputStream(dest)){if(in==null)throw new IllegalStateException("Arquivo não pôde ser aberto.");byte[] buf=new byte[8192];int n;long total=0;while((n=in.read(buf))!=-1){total+=n;if(total>16L*1024*1024)throw new IllegalArgumentException("Pacote maior que 16 MiB.");out.write(buf,0,n);}scanPackages();status.setText("Pacote importado!");}catch(Exception e){dest.delete();status.setText("Falha ao importar: "+e.getMessage());}}
     private void scanPackages(){list.removeAllViews();packages.clear();File dir=new File(getFilesDir(),"mods");File[] files=dir.listFiles((d,n)->n.toLowerCase().endsWith(".gdhb"));if(files!=null)for(File f:files)packages.add(f);
         status.setText(packages.size()+(packages.size()==1?" pacote instalado":" pacotes instalados"));
@@ -62,6 +65,7 @@ public class MainActivity extends Activity {
         for(File file:packages){LinearLayout card=new LinearLayout(this);card.setOrientation(1);card.setPadding(dp(15),dp(13),dp(15),dp(13));card.setBackground(box(PANEL,14));LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-1,-2);cp.bottomMargin=dp(10);list.addView(card,cp);
             TextView name=new TextView(this);name.setText("▣  "+file.getName());name.setTextColor(TEXT);name.setTextSize(14);name.setTypeface(null,Typeface.BOLD);card.addView(name);
             TextView meta=new TextView(this);meta.setText("PACOTE GDHB  •  ARMAZENADO NO APP");meta.setTextColor(MUTED);meta.setTextSize(10);meta.setPadding(0,dp(5),0,dp(12));card.addView(meta);
+            Switch enabled=new Switch(this);enabled.setText("Ativado no gerenciador");enabled.setTextColor(TEXT);enabled.setTextSize(12);enabled.setChecked(modPrefs.getBoolean(file.getName(),false));enabled.setOnCheckedChangeListener((button,checked)->modPrefs.edit().putBoolean(file.getName(),checked).apply());card.addView(enabled);
             LinearLayout row=new LinearLayout(this);Button run=button("Validar e executar",PURPLE);run.setOnClickListener(v->runPackage(file));row.addView(run,new LinearLayout.LayoutParams(0,dp(44),1));
             Button del=button("Remover",0xFF30202D);del.setTextColor(0xFFFFA6B5);del.setOnClickListener(v->{if(file.delete())scanPackages();else status.setText("Não foi possível remover.");});LinearLayout.LayoutParams deleteParams=new LinearLayout.LayoutParams(dp(100),dp(44));deleteParams.leftMargin=dp(8);row.addView(del,deleteParams);card.addView(row);
         }}
