@@ -56,13 +56,18 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
             FMOD.init(this)
             val info = packageManager.getPackageInfo(gamePackage, 0)
             attachGameAssets(info)
+
+            val saveDirectory = File(filesDir, "gdhub/save").apply { mkdirs() }
+            // Match the upstream launcher order: shared C++ runtime and path hooks
+            // must be ready before the game's native libraries are loaded.
+            System.loadLibrary("c++_shared")
+            LauncherFix.setOriginalDataPath("/data/data/$gamePackage")
+            LauncherFix.setDataPath(saveDirectory.absolutePath)
+
             Cocos2dxHelper.init(this, this)
             loadGameLibrary(info, "fmod")
             loadGameLibrary(info, "cocos2dcpp")
 
-            val saveDirectory = File(filesDir, "gdhub/save").apply { mkdirs() }
-            LauncherFix.setOriginalDataPath("/data/data/$gamePackage")
-            LauncherFix.setDataPath(saveDirectory.absolutePath)
             val gameVersionCode = if (android.os.Build.VERSION.SDK_INT >= 28) info.longVersionCode else info.versionCode.toLong()
             if (gameVersionCode >= 39L) LauncherFix.enableExceptionsRenaming()
             LauncherFix.performPatches()
