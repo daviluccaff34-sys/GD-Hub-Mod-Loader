@@ -5,6 +5,7 @@
 #include "loader/game/game_ui_bridge.hpp"
 #include "loader/game/game_ui_layout.hpp"
 #include "loader/game/game_ui_render_plan.hpp"
+#include "loader/game/cocos_runtime_symbols.hpp"
 #include <cstdio>
 #include <fstream>
 #include <iostream>
@@ -45,6 +46,21 @@ public:
         enabled = value; return true;
     }
 };
+
+static void* fake_cocos_symbol_lookup(const char* name) {
+    if (!name) return nullptr;
+    const std::string symbol(name);
+    if (symbol == "_ZN7cocos2d10CCDirector14sharedDirectorEv" ||
+        symbol == "_ZN7cocos2d6CCNode8addChildEPS0_" ||
+        symbol == "_ZN7cocos2d6CCNode11setPositionEff" ||
+        symbol == "_ZN7cocos2d6CCNode8setScaleEf" ||
+        symbol == "_ZN7cocos2d6CCNode26removeFromParentAndCleanupEb" ||
+        symbol == "_ZN7cocos2d8CCSprite6createEPKc" ||
+        symbol == "_ZN7cocos2d13CCLabelBMFont6createEPKcS2_") {
+        return reinterpret_cast<void*>(static_cast<std::uintptr_t>(1));
+    }
+    return nullptr;
+}
 
 static bool check(bool value, const char* label) {
     if (!value) std::cerr << "FAIL: " << label << '\n';
@@ -172,6 +188,16 @@ int main() {
     }
     ok &= check(!reader.inspect(bad_path, info), "GDHB rejects directory traversal paths");
 
+
+    auto fake_cocos = gdhub::game::inspect_cocos_symbols(fake_cocos_symbol_lookup);
+    fake_cocos.library_loaded = true;
+    ok &= check(fake_cocos.has_required_symbols(),
+                "Cocos symbol probe accepts complete verified symbol set");
+    fake_cocos.sprite_create = nullptr;
+    ok &= check(!fake_cocos.has_required_symbols(),
+                "Cocos symbol probe rejects incomplete symbol set");
+    ok &= check(!gdhub::game::inspect_cocos_symbols(nullptr).has_required_symbols(),
+                "Cocos symbol probe rejects missing lookup provider");
 
     const auto layout = gdhub::game::calculate_game_ui_layout(
         {800.0f, 450.0f}, {12.0f, 8.0f, 12.0f, 8.0f});
