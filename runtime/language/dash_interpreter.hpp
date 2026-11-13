@@ -5,6 +5,7 @@
 #include <vector>
 #include <unordered_map>
 #include <variant>
+#include <atomic>
 
 namespace gdhub::language {
 
@@ -13,7 +14,7 @@ using Value = std::variant<double, bool, std::string>;
 class DashInterpreter {
 public:
     // Executes a DashCode source string and collects output from 'say'.
-    bool run(const std::string& source, std::vector<std::string>& output);
+    bool run(const std::string& source, std::vector<std::string>& output, const std::atomic_bool* cancel = nullptr);
 
     const std::string& last_error() const { return m_error; }
 
@@ -26,7 +27,8 @@ private:
                        std::vector<std::string>& output,
                        std::size_t& steps,
                        bool stop_on_else,
-                       bool expect_end);
+                       bool expect_end,
+                       const std::atomic_bool* cancel);
 
     bool evaluate_condition(const std::string& condition,
                             const Variables& variables,
