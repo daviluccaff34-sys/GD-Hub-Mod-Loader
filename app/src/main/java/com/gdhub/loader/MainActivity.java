@@ -106,7 +106,14 @@ public class MainActivity extends Activity {
             if (in == null) throw new IllegalStateException("Arquivo não pôde ser aberto.");
             byte[] buffer = new byte[8192];
             int read;
-            while ((read = in.read(buffer)) != -1) out.write(buffer, 0, read);
+            long total = 0;
+            while ((read = in.read(buffer)) != -1) {
+                total += read;
+                if (total > 16L * 1024L * 1024L) {
+                    throw new IllegalArgumentException("O pacote excede 16 MiB.");
+                }
+                out.write(buffer, 0, read);
+            }
             status.setText("Importado: " + name);
             scanPackages();
         } catch (Exception error) {
@@ -138,6 +145,16 @@ public class MainActivity extends Activity {
             Button run = button("VALIDAR E EXECUTAR");
             run.setOnClickListener(v -> runPackage(file));
             root.addView(run);
+            Button delete = button("REMOVER PACOTE");
+            delete.setOnClickListener(v -> {
+                if (file.delete()) {
+                    status.setText("Pacote removido: " + file.getName());
+                    scanPackages();
+                } else {
+                    status.setText("Não foi possível remover o pacote.");
+                }
+            });
+            root.addView(delete);
         }
     }
 
