@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GD Hub Construction Draft API",
+  "type": "object",
+  "required": [
+    "format",
+    "objects",
+    "groups",
+    "triggers"
+  ],
+  "properties": {
+    "format": {
+      "const": "gdhub-build-draft-1"
+    },
+    "objects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "tipo",
+          "x",
+          "y",
+          "propriedades"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "x": {
+            "type": "number"
+          },
+          "y": {
+            "type": "number"
+          },
+          "propriedades": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    },
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "nome",
+          "objetos"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "nome": {
+            "type": "string"
+          },
+          "objetos": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "triggers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "tipo",
+          "x",
+          "y",
+          "config"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "x": {
+            "type": "number"
+          },
+          "y": {
+            "type": "number"
+          },
+          "alvo": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "config": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  }
+}
