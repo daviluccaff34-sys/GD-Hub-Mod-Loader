@@ -10,7 +10,11 @@
 - [x] Implement first DashCode interpreter instructions
 - [x] Add Python GDHB packager
 - [x] Add native tests and GitHub Actions CI workflow
-- [ ] Run CI and fix any failures
+- [x] Add Android companion manager UI and JNI bridge
+- [x] Add ARM32/ARM64 APK build workflow
+- [x] Add runtime execution limits
+- [ ] Verify native CI, Android shared-library builds and APK artifact
+- [ ] Run APK on a physical Android device
 - [ ] Complete JSON manifest validation and package permissions
 - [ ] Expand DashCode grammar and error messages
 
@@ -19,7 +23,8 @@
 - [ ] Add safe bridge between the in-game component and the runtime
 - [ ] Define a version-specific integration boundary for Geometry Dash 2.2081
 - [ ] Add runtime API for supported game actions
-- [ ] Add mod manager interface
+- [x] Add companion mod manager interface (outside the game)
+- [ ] Add in-game mod manager interface through a documented integration boundary
 
 ## Important boundaries
 - A .gdhb is a package containing source code, not a compiled mod.
