@@ -4,6 +4,7 @@
 #include <set>
 #include <utility>
 #include <cstdint>
+#include <cctype>
 
 namespace gdhub::runtime {
 namespace {
