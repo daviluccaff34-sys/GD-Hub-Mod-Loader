@@ -197,7 +197,7 @@ int main() {
         layout, false, render_mods);
     ok &= check(closed_plan.items.size() == 1 &&
                 closed_plan.hit_targets.size() == 1 &&
-                closed_plan.hit_targets[0].action == gdhub::game::UiHitAction::OpenPanel,
+                closed_plan.hit_targets[0].action == gdhub::game::UiHitAction::TogglePanel,
                 "closed render plan contains only the floating launcher");
     const auto open_plan = gdhub::game::build_game_ui_render_plan(
         layout, true, render_mods);
@@ -229,6 +229,39 @@ int main() {
     for (const auto& draw : empty_plan.items)
         if (draw.text == "NO MODS INSTALLED") has_empty_label = true;
     ok &= check(has_empty_label, "empty package list gets an in-panel message");
+    const auto launcher_hit = gdhub::game::hit_test_game_ui(
+        closed_plan, layout.floating_button.x + layout.floating_button.width * 0.5f,
+        layout.floating_button.y + layout.floating_button.height * 0.5f);
+    ok &= check(launcher_hit.has_value() &&
+                launcher_hit->action == gdhub::game::UiHitAction::TogglePanel,
+                "touching launcher center toggles panel");
+    const auto close_target = [&]() -> const gdhub::game::UiHitTarget* {
+        for (const auto& target : open_plan.hit_targets)
+            if (target.action == gdhub::game::UiHitAction::ClosePanel) return &target;
+        return nullptr;
+    }();
+    const auto close_hit = close_target ? gdhub::game::hit_test_game_ui(
+        open_plan, close_target->bounds.x + close_target->bounds.width * 0.5f,
+        close_target->bounds.y + close_target->bounds.height * 0.5f) : std::nullopt;
+    ok &= check(close_hit.has_value() &&
+                close_hit->action == gdhub::game::UiHitAction::ClosePanel,
+                "touching X center selects close action");
+    const auto mod_target = [&]() -> const gdhub::game::UiHitTarget* {
+        for (const auto& target : open_plan.hit_targets)
+            if (target.action == gdhub::game::UiHitAction::ToggleMod &&
+                target.mod_id == "demo.disabled") return &target;
+        return nullptr;
+    }();
+    const auto mod_hit = mod_target ? gdhub::game::hit_test_game_ui(
+        open_plan, mod_target->bounds.x + mod_target->bounds.width * 0.5f,
+        mod_target->bounds.y + mod_target->bounds.height * 0.5f) : std::nullopt;
+    ok &= check(mod_hit.has_value() &&
+                mod_hit->action == gdhub::game::UiHitAction::ToggleMod &&
+                mod_hit->mod_id == "demo.disabled",
+                "touching mod switch returns its exact package id");
+    const auto outside_hit = gdhub::game::hit_test_game_ui(
+        open_plan, -100.0f, -100.0f);
+    ok &= check(!outside_hit.has_value(), "touch outside controls is ignored");
 
     TestGameUiHost ui_host;
     TestModCatalog mod_catalog;
