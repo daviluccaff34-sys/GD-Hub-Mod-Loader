@@ -275,7 +275,8 @@ public class MainActivity extends Activity {
             return;
         }
         StringBuilder details=new StringBuilder();
-        details.append("Versão: ").append(game.versionName).append(" (").append(game.versionCode).append(")\n");
+        details.append("Versão do APK: ").append(game.versionName).append(" (").append(game.versionCode).append(")\n");
+        details.append("Versão Geometry Dash: ").append(game.unifiedVersion).append("\n");
         details.append("ABIs do aparelho: ").append(android.text.TextUtils.join(", ",game.supportedAbis)).append("\n");
         details.append("Bibliotecas nativas: ").append(GameInstallProbe.hasNativeLibraryDirectory(game)?"diretório encontrado":"diretório não encontrado").append("\n");
         details.append("APK base: ").append(game.sourceApk).append("\n\n");
