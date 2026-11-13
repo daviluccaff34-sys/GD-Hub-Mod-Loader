@@ -8,6 +8,7 @@ add_library(gdhub_loader SHARED
     loader/core/loader.cpp
     loader/game/game_ui_bridge.cpp
     loader/game/game_ui_layout.cpp
+    loader/game/game_ui_render_plan.cpp
     runtime/package/gdhb_reader.cpp
     runtime/language/dash_interpreter.cpp
     runtime/mod_runtime.cpp
