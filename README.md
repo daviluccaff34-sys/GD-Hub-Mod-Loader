@@ -35,4 +35,4 @@ The packager preserves the DashCode source. It does not compile it.
 
 Open the repository in Android Studio and build the `app` module, or download the debug APK from the `GD-Hub-Android-APK` artifact of a successful GitHub Actions run.
 
-See `docs/ROADMAP.md`, `docs/FORMAT_GDHB.md` and `docs/LANGUAGE.md`.
+See `docs/ROADMAP.md`, `docs/FORMAT_GDHB.md`, `docs/LANGUAGE.md`, `docs/C_API.md` and `docs/ANDROID_TESTING.md`.
