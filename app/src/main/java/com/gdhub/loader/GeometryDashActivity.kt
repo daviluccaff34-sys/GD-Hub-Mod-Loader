@@ -53,29 +53,39 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
         Cocos2dxHostContext.current = this
         activeActivity = this
         try {
+            setBootStage("Preparando FMOD")
             FMOD.init(this)
+            setBootStage("Lendo instalação do Geometry Dash")
             val info = packageManager.getPackageInfo(gamePackage, 0)
+            setBootStage("Anexando assets do APK")
             attachGameAssets(info)
 
             val saveDirectory = File(filesDir, "gdhub/save").apply { mkdirs() }
             // Match the upstream launcher order: shared C++ runtime and path hooks
             // must be ready before the game's native libraries are loaded.
+            setBootStage("Carregando runtime C++")
             System.loadLibrary("c++_shared")
             LauncherFix.setOriginalDataPath("/data/data/$gamePackage")
             LauncherFix.setDataPath(saveDirectory.absolutePath)
 
+            setBootStage("Inicializando Cocos2dxHelper")
             Cocos2dxHelper.init(this, this)
+            setBootStage("Carregando FMOD nativo")
             loadGameLibrary(info, "fmod")
+            setBootStage("Carregando Cocos2d-x nativo")
             loadGameLibrary(info, "cocos2dcpp")
 
             val gameVersionCode = if (android.os.Build.VERSION.SDK_INT >= 28) info.longVersionCode else info.versionCode.toLong()
             if (gameVersionCode >= 39L) LauncherFix.enableExceptionsRenaming()
+            setBootStage("Aplicando patches de compatibilidade")
             LauncherFix.performPatches()
 
+            setBootStage("Configurando caminho do APK")
             Cocos2dxHelper.nativeSetApkPath(info.applicationInfo!!.sourceDir)
             runCatching {
                 JniToCpp.setupHSSAssets(info.applicationInfo!!.sourceDir, Environment.getExternalStorageDirectory().absolutePath)
             }.onFailure { Log.w("GDHub", "HSS asset setup was not available", it) }
+            setBootStage("Criando superfície OpenGL")
             createGameSurface()
         } catch (error: Throwable) {
             Log.e("GDHub", "Could not start the in-process Geometry Dash runtime", error)
@@ -86,6 +96,12 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
                 .setOnCancelListener { finish() }
                 .show()
         }
+    }
+
+    private fun setBootStage(stage: String) {
+        getSharedPreferences("gdhub_boot_diagnostics", MODE_PRIVATE).edit()
+            .putString("stage", stage).putLong("time", System.currentTimeMillis()).commit()
+        Log.i("GDHubBoot", stage)
     }
 
     private fun attachGameAssets(info: PackageInfo) {
@@ -345,6 +361,7 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
     }
 
     override fun onDestroy() {
+        getSharedPreferences("gdhub_boot_diagnostics", MODE_PRIVATE).edit().putString("stage", "Activity encerrada normalmente").commit()
         runCatching { FMOD.close() }
         Cocos2dxHostContext.current = null
         if (activeActivity === this) activeActivity = null
