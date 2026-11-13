@@ -57,7 +57,7 @@ bool valid_utf8(const std::string& s) {
 }
 class JsonCheck {
     const std::string& s; std::size_t p=0;
-    void ws(){while(p<s.size()&&(s[p]==' '||s[p]=='\\n'||s[p]=='\\r'||s[p]=='\\t'))++p;}
+    void ws(){while(p<s.size()&&(s[p]==' '||s[p]=='\n'||s[p]=='\r'||s[p]=='\t'))++p;}
     bool str(std::string* out=nullptr){
         if(p>=s.size()||s[p++]!='"')return false;
         if(out)out->clear();
@@ -69,7 +69,7 @@ class JsonCheck {
             if(p>=s.size())return false;
             char e=s[p++];
             if(e=='"'||e=='\\'||e=='/'){if(out)*out+=e;}
-            else if(e=='b'||e=='f'||e=='n'||e=='r'||e=='t'){if(out)*out+=(e=='b'?'\\b':e=='f'?'\\f':e=='n'?'\\n':e=='r'?'\\r':'\\t');}
+            else if(e=='b'||e=='f'||e=='n'||e=='r'||e=='t'){if(out)*out+=(e=='b'?'\b':e=='f'?'\f':e=='n'?'\n':e=='r'?'\r':'\t');}
             else if(e=='u'){for(int i=0;i<4;++i){if(p>=s.size()||!std::isxdigit(static_cast<unsigned char>(s[p++])))return false;}}
             else return false;
         }
