@@ -38,7 +38,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools'
       - name: Install Android NDK
         run: sdkmanager "ndk;27.2.12479018"
       - name: Configure Android
@@ -64,7 +66,9 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools'
       - name: Install Android SDK and NDK
         run: sdkmanager "platforms;android-35" "build-tools;35.0.0" "cmake;3.22.1" "ndk;27.2.12479018"
       - uses: gradle/actions/setup-gradle@v4
