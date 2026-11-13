@@ -13,6 +13,7 @@
 - [x] Add Android companion manager UI and JNI bridge
 - [x] Add ARM32/ARM64 APK build workflow
 - [x] Add runtime execution limits
+- [x] Add versioned C ABI for future native hosts
 - [ ] Verify native CI, Android shared-library builds and APK artifact
 - [ ] Run APK on a physical Android device
 - [ ] Complete JSON manifest validation and package permissions
