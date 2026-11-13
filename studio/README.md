@@ -62,3 +62,6 @@ Abra `catalogo.html`. Informe a URL HTTPS do Worker Cloudflare implantado, carre
 
 ### Construction JavaScript API
 `construction-api.js` exports `GDHubBuild` with createObject, setObjectProperty, createGroup, addToGroup, createTrigger, configureTrigger, remove, reset and getData. The editor uses this API to create the exported draft. It does not call native Geometry Dash functions.
+
+## Exemplo inicial
+O diretório `examples/hello_dashpt/` contém `main.dashpt` (fonte DashPT), `main.dash` (saída DashCode executável pelo interpretador atual) e manifesto GDHB. O exemplo executa mensagens/variáveis; não modifica a fase do jogo.
