@@ -7,7 +7,7 @@
 <section class="card"><h2>Publicar um mod</h2><p class="muted">Selecione um arquivo .gdhb e preencha os metadados. O Worker valida o pacote e deixa o envio pendente até aprovação.</p><input id="file" type="file" accept=".gdhb,application/octet-stream"><input id="name" maxlength="64" placeholder="Nome do mod"><input id="version" maxlength="32" placeholder="Versão"><input id="author" maxlength="48" placeholder="Autor"><textarea id="description" maxlength="500" placeholder="Descrição"></textarea><button id="publish">Enviar para revisão</button></section>
 <section class="card"><h2>Moderação (administradores)</h2><p class="muted">O token é usado somente nesta sessão e nunca é salvo no navegador. Não compartilhe esse segredo.</p><input id="adminToken" type="password" autocomplete="off" placeholder="ADMIN_TOKEN"><button class="secondary" id="pending">Ver envios pendentes</button><div id="pendingList" class="grid"></div></section>
 <script>
-const $=id=>document.getElementById(id);const saved=localStorage.getItem("gdhub_catalog_api")||"";$("api").value=saved;
+const $=id=>document.getElementById(id);const defaultApi="https://gdhub-mod-catalog.daviluccaff34.workers.dev";const saved=localStorage.getItem("gdhub_catalog_api")||defaultApi;$("api").value=saved;
 function base(){let v=$("api").value.trim().replace(/\/+$/,"");if(!/^https:\/\//i.test(v))throw Error("Use a URL HTTPS do Worker.");return v}
 function show(t){$("status").textContent=t}
 $("save").onclick=()=>{try{let v=base();localStorage.setItem("gdhub_catalog_api",v);show("URL salva neste navegador.")}catch(e){show(e.message)}};
