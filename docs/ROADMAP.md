@@ -60,11 +60,16 @@ Geode Android Launcher's version map identifies Android `versionCode 41` as Geom
 - [x] Add construction draft editor for objects, groups, triggers, properties and removal by ID.
 - [x] Export construction draft as `level/build.json` and publish its JSON schema.
 - [x] Add Studio catalog page to list approved mods, submit GDHB packages, download approved packages and moderate pending submissions.
-- [ ] Connect the Studio to the actual deployed Worker URL and verify CORS from the Pages domain.
-- [ ] Add/configure `ADMIN_TOKEN` secret and test real moderation end-to-end.
+- [x] Publish the Studio as Worker `gdhub-studio` at `https://gdhub-studio.daviluccaff34.workers.dev/`; workers.dev enabled.
+- [x] Set the catalog UI default API URL to the deployed catalog Worker; its KV `MODS` binding is present.
+- [ ] Verify live HTTP requests from a normal browser; this execution environment blocks direct requests to workers.dev.
+- [ ] Add/configure `ADMIN_TOKEN` secret in Cloudflare Dashboard; secret-write action was blocked by security controls, so no token was created.
+- [ ] Test real upload, pending review, approval, listing and download after the secret is configured.
 - [ ] Implement native runtime parsing for `level/build.json`, object/group/trigger actions and safe permission enforcement.
 - [ ] Implement verified Cocos2d-x adapter for Geometry Dash 2.2081.
-- [ ] Run browser tests, native CI, Android build and physical-device validation before declaring version 1.00.0 released.
+- [x] Native CMake/CTest and ARM32/ARM64 shared-library jobs passed on workflow run 43499235355.
+- [ ] Finish Android companion APK build in workflow run 43499235355 and download/test it.
+- [ ] Run browser tests and physical-device validation before declaring version 1.00.0 released.
 
 The code-piece and construction editors are authoring/export tools. They do not imply that all tokens are executable game functions. Native game integration remains a separate unfinished milestone.
 
