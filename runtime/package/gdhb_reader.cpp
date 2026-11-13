@@ -104,7 +104,7 @@ bool GdhbReader::inspect(const std::string& file_path, PackageInfo& out_info) co
         if (path == "manifest.json") manifest = std::move(data);
         if (path == "src/main.dash") main_source = std::move(data);
     }
-    if (total != static_cast<std::uint64_t>(length)) { m_error = "Existem dados extras no fim do pacote."; return false; }
+    if (total != static_cast<std::uint64_t>(file_size)) { m_error = "Existem dados extras no fim do pacote."; return false; }
     if (manifest.empty() || main_source.empty()) {
         m_error = "O pacote precisa de manifest.json e src/main.dash."; return false;
     }
