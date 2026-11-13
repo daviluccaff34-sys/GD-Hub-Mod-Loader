@@ -16,7 +16,6 @@ class Cocos2dxGLSurfaceView(context: Context) : GLSurfaceView(context) {
     init {
         setEGLContextClientVersion(2)
         setEGLConfigChooser(8, 8, 8, 8, 16, 0)
-        renderMode = RENDERMODE_CONTINUOUSLY
         isFocusable = true
         isFocusableInTouchMode = true
         currentView = this
@@ -65,6 +64,9 @@ class Cocos2dxGLSurfaceView(context: Context) : GLSurfaceView(context) {
         cocosRenderer = renderer
         renderer.setScreenWidthAndHeight(width.coerceAtLeast(1), height.coerceAtLeast(1))
         setRenderer(renderer)
+        // GLSurfaceView creates its GLThread inside setRenderer(); calling
+        // setRenderMode before that point crashes because mGLThread is null.
+        renderMode = RENDERMODE_CONTINUOUSLY
     }
 
     fun sendKeyBack() {
