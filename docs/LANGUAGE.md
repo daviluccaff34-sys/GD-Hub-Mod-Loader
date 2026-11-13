@@ -113,3 +113,15 @@ Os 1.200 identificadores do dicionário são vocabulário de referência. Eles n
 5. O interpretador executa apenas os recursos disponíveis nesta versão.
 
 Nenhuma ação dentro do Geometry Dash é realizada ainda: a API do jogo depende de uma camada de integração futura.
+
+## Interface gerada pelo DashCode
+
+O runtime também aceita comandos de interface. Eles criam uma camada visual sobre o jogo hospedado pelo GD Hub (não são ainda nós Cocos2d-x nem objetos do editor de fases):
+
+```dash
+ui title "Meu primeiro menu"
+ui label "Bem-vindo ao meu mod!"
+ui button "Continuar"
+```
+
+Comandos disponíveis: `ui title valor`, `ui label valor`, `ui button valor` e `ui clear`. O botão atualmente confirma o toque no painel de saída; ações de jogo e objetos de fase ainda dependem da API específica do Geometry Dash.
