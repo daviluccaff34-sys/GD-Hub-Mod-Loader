@@ -67,3 +67,6 @@ Geode Android Launcher's version map identifies Android `versionCode 41` as Geom
 - [ ] Run browser tests, native CI, Android build and physical-device validation before declaring version 1.00.0 released.
 
 The code-piece and construction editors are authoring/export tools. They do not imply that all tokens are executable game functions. Native game integration remains a separate unfinished milestone.
+
+- [x] Reduce the in-game floating launcher from 52dp to 40dp.
+- [x] Reduce the companion in-game panel to 240×260dp and allow dragging it by the header; launcher dragging remains enabled.
