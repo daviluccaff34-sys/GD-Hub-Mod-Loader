@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090b18">
+<title>More Icons Composer · GD Hub</title>
+<style>
+:root{color-scheme:dark;--bg:#090b18;--panel:#141a30;--line:#303b60;--text:#f4f6ff;--muted:#aab5d4;--cyan:#67e8f9;--purple:#9b87ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% 0%,#30235c 0,transparent 42%),var(--bg);color:var(--text);font:15px/1.5 system-ui,sans-serif}
+header,main,footer{max-width:900px;margin:auto;padding:22px 18px}header{border-bottom:1px solid var(--line)}
+.brand{font-weight:900;letter-spacing:1px;color:var(--cyan)}h1{font-size:clamp(26px,6vw,40px);line-height:1.1;margin:18px 0 8px}p,.hint{color:var(--muted)}main{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.panel{background:linear-gradient(180deg,#171e36,#101528);border:1px solid var(--line);border-radius:18px;padding:18px}
+.full{grid-column:1/-1}.field{display:grid;gap:7px;margin:12px 0}label{font-weight:700;font-size:13px;color:#d4dcf5}
+input[type=file],select{width:100%;padding:11px;border:1px solid #3a466c;border-radius:10px;background:#090f20;color:var(--text)}
+input[type=range]{width:100%;accent-color:var(--cyan)}
+button{border:0;border-radius:11px;padding:12px 17px;background:linear-gradient(100deg,var(--purple),var(--cyan));color:#08101d;font-weight:900;cursor:pointer}
+button.secondary{background:#242d4a;color:var(--text);border:1px solid #3a466c}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.preview{display:grid;place-items:center;min-height:310px;background-color:#0b1020;background-image:linear-gradient(45deg,#202943 25%,transparent 25%),linear-gradient(-45deg,#202943 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#202943 75%),linear-gradient(-45deg,transparent 75%,#202943 75%);background-size:24px 24px;background-position:0 0,0 12px,12px -12px,-12px 0;border-radius:13px;overflow:hidden}
+canvas{width:min(100%,300px);height:auto;image-rendering:pixelated;filter:drop-shadow(0 8px 18px #0008)}
+.status{padding:12px;border:1px solid var(--line);border-radius:10px;margin-top:12px;color:#b9f7e8;white-space:pre-wrap}
+.hint{font-size:12px}footer{text-align:center;font-size:12px}
+@media(max-width:650px){main{grid-template-columns:1fr}.full{grid-column:auto}.preview{min-height:280px}}
+</style>
+</head>
+<body>
+<header><div class="brand">GD HUB · MOD STUDIO</div><h1>More Icons Composer</h1><p>Combine a metade esquerda de um ícone com a metade direita de outro e crie uma aparência personalizada.</p></header>
+<main>
+<section class="panel">
+<h2>01 · Ícone esquerdo</h2>
+<div class="field"><label for="leftFile">Escolha uma imagem PNG, JPG ou WebP</label><input id="leftFile" type="file" accept="image/png,image/jpeg,image/webp"></div>
+<p class="hint">Esta imagem fornece a metade esquerda do resultado.</p>
+</section>
+<section class="panel">
+<h2>02 · Ícone direito</h2>
+<div class="field"><label for="rightFile">Escolha outra imagem</label><input id="rightFile" type="file" accept="image/png,image/jpeg,image/webp"></div>
+<p class="hint">Esta imagem fornece a metade direita do resultado.</p>
+</section>
+<section class="panel full">
+<h2>03 · Ajustar combinação</h2>
+<div class="field"><label for="split">Divisão entre os ícones: <output id="splitValue">50%</output></label><input id="split" type="range" min="10" max="90" value="50"></div>
+<div class="preview"><canvas id="result" width="512" height="512" aria-label="Prévia do ícone combinado"></canvas></div>
+<div class="actions"><button id="download" disabled>Exportar PNG</button><button class="secondary" id="reset">Restaurar divisão</button></div>
+<div class="status" id="status" role="status">Envie as duas imagens para começar. O processamento acontece somente neste dispositivo.</div>
+</section>
+<section class="panel full">
+<h2>04 · Usar no GD Hub Mod Studio</h2>
+<p>Depois de exportar, abra o criador de pacotes e adicione o PNG em <strong>Arquivos de imagem</strong>. Ele será incluído em <code>assets/icons/</code> dentro do arquivo .gdhb.</p>
+<p class="hint">Esta ferramenta cria a imagem combinada. A aplicação automática desse visual no personagem dentro do Geometry Dash ainda depende da integração do GD Hub com a renderização e a seleção de ícones do jogo.</p>
+<div class="actions"><a href="./index.html"><button class="secondary" type="button">Voltar ao Mod Studio</button></a></div>
+</section>
+</main>
+<footer>GD Hub · More Icons Composer · Composição visual local</footer>
+<script>
+const $=id=>document.getElementById(id);
+const canvas=$('result'),ctx=canvas.getContext('2d');
+let left=null,right=null,leftUrl=null,rightUrl=null;
+function loadImage(file,side){
+ if(!file)return;
+ if(!/^image\/(png|jpeg|webp)$/.test(file.type)){ $('status').textContent='Formato não aceito. Use PNG, JPG ou WebP.';return; }
+ if(file.size>8*1024*1024){ $('status').textContent='A imagem precisa ter no máximo 8 MiB.';return; }
+ const url=URL.createObjectURL(file),img=new Image();
+ img.onload=()=>{if(side==='left'){left=img;if(leftUrl)URL.revokeObjectURL(leftUrl);leftUrl=url}else{right=img;if(rightUrl)URL.revokeObjectURL(rightUrl);rightUrl=url}draw()};
+ img.onerror=()=>{URL.revokeObjectURL(url);$('status').textContent='Não foi possível abrir essa imagem.'};
+ img.src=url;
+}
+function drawSquare(img){
+ const size=512,scale=Math.max(size/img.width,size/img.height),w=img.width*scale,h=img.height*scale;
+ ctx.drawImage(img,(size-w)/2,(size-h)/2,w,h);
+}
+function draw(){
+ ctx.clearRect(0,0,512,512);
+ if(!left&&!right){$('download').disabled=true;return}
+ const cut=Math.round(512*Number($('split').value)/100);
+ if(left){ctx.save();ctx.beginPath();ctx.rect(0,0,cut,512);ctx.clip();drawSquare(left);ctx.restore()}
+ if(right){ctx.save();ctx.beginPath();ctx.rect(cut,0,512-cut,512);ctx.clip();drawSquare(right);ctx.restore()}
+ // Dividing line is a preview guide, not part of the exported icon.
+ ctx.save();ctx.strokeStyle='#67e8f9';ctx.lineWidth=3;ctx.setLineDash([9,8]);ctx.beginPath();ctx.moveTo(cut,0);ctx.lineTo(cut,512);ctx.stroke();ctx.restore();
+ $('download').disabled=!(left&&right);
+ $('status').textContent=left&&right?'Prévia pronta! A linha azul é apenas uma guia e não aparece no PNG exportado.':'Envie a outra imagem para completar a combinação.';
+}
+$('leftFile').addEventListener('change',e=>loadImage(e.target.files[0],'left'));
+$('rightFile').addEventListener('change',e=>loadImage(e.target.files[0],'right'));
+$('split').addEventListener('input',()=>{$('splitValue').textContent=$('split').value+'%';draw()});
+$('reset').addEventListener('click',()=>{$('split').value=50;$('splitValue').textContent='50%';draw()});
+$('download').addEventListener('click',()=>{
+ if(!left||!right)return;
+ const cut=Math.round(512*Number($('split').value)/100);
+ ctx.clearRect(0,0,512,512);
+ ctx.save();ctx.beginPath();ctx.rect(0,0,cut,512);ctx.clip();drawSquare(left);ctx.restore();
+ ctx.save();ctx.beginPath();ctx.rect(cut,0,512-cut,512);ctx.clip();drawSquare(right);ctx.restore();
+ canvas.toBlob(blob=>{if(!blob){$('status').textContent='Falha ao exportar PNG.';return}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='more-icons-combinado.png';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);$('status').textContent='PNG exportado! Adicione more-icons-combinado.png ao pacote no Mod Studio.'},'image/png');
+});
+draw();
+</script>
+</body></html>
