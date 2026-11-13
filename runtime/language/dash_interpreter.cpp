@@ -244,13 +244,10 @@ bool DashInterpreter::execute_block(const std::vector<std::string>& lines,
             bool condition = false;
             if (!evaluate_condition(line.substr(3), variables, condition)) return false;
             ++index;
-            const bool executed = execute_block(lines, index, variables, output, true);
-            if (!executed) return false;
-            if (index < lines.size() && lines[index] == "else") {
-                ++index;
-                if (!condition) {
-                    if (!execute_block(lines, index, variables, output, false)) return false;
-                } else {
+            if (condition) {
+                if (!execute_block(lines, index, variables, output, true)) return false;
+                if (index < lines.size() && lines[index] == "else") {
+                    ++index;
                     std::size_t cursor = index;
                     int depth = 1;
                     while (cursor < lines.size() && depth > 0) {
@@ -261,8 +258,24 @@ bool DashInterpreter::execute_block(const std::vector<std::string>& lines,
                     if (depth != 0) { m_error = "Bloco else sem end."; return false; }
                     index = cursor;
                 }
-            } else if (condition) {
-                // The true branch was executed and consumed its end.
+            } else {
+                // Skip the true branch and execute only the optional else branch.
+                std::size_t cursor = index;
+                int depth = 1;
+                std::size_t else_at = lines.size();
+                while (cursor < lines.size() && depth > 0) {
+                    if (lines[cursor] == "else" && depth == 1) else_at = cursor;
+                    else if (lines[cursor].rfind("if ", 0) == 0 || lines[cursor].rfind("repeat ", 0) == 0) ++depth;
+                    else if (lines[cursor] == "end") --depth;
+                    ++cursor;
+                }
+                if (depth != 0) { m_error = "Bloco if sem end."; return false; }
+                if (else_at != lines.size()) {
+                    index = else_at + 1;
+                    if (!execute_block(lines, index, variables, output, false)) return false;
+                } else {
+                    index = cursor;
+                }
             }
             continue;
         }
