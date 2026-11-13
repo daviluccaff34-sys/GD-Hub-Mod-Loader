@@ -21,10 +21,10 @@
 - [ ] Expand DashCode grammar and error messages
 
 ## 0.2.0 — Android runtime and game integration
-- [ ] Build reproducible ARM32 and ARM64 Android artifacts with the NDK
-- [ ] Run and validate the companion APK on a physical device
+- [x] Build reproducible ARM32 and ARM64 Android shared libraries with the NDK (workflow run 43384744508)
+- [x] Build and upload the companion APK artifact in CI (workflow run 43384744508)\n- [ ] Install and validate the companion APK on a physical device
 - [x] Document the version-specific integration boundary and staged plan for Geometry Dash 2.2081
-- [ ] Add a safe bridge between a verified in-game component and the runtime
+- [ ] Port the complete in-process Cocos2d-x Android host (Activity, Java bridge, FMOD bridge, asset redirection and lifecycle) from a license-compatible upstream baseline\n- [ ] Add a safe bridge between a verified in-game component and the runtime
 - [ ] Define package permissions and enforce them in the runtime
 - [ ] Add runtime API for supported game actions
 - [ ] Add in-game mod manager interface through a documented integration boundary
@@ -46,4 +46,4 @@
 
 ## Geometry Dash APK identity warning
 
-The APK uploaded for native inspection reports manifest version `2.2.144` (versionCode 41), not the requested `2.2081`. Its Cocos symbols and Java startup path must not be treated as verified for 2.2081. Obtain the exact target APK before writing the in-game loader adapter.
+The APK uploaded for native inspection reports manifest versionName `2.2.144` and versionCode `41`. Do not infer target compatibility from the display version alone: confirm the exact package build and its native ABI before writing the version-specific adapter.
