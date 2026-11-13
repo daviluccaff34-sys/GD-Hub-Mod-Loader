@@ -68,7 +68,7 @@ bool DashInterpreter::run(const std::string& source, std::vector<std::string>& o
     Variables variables;
     std::size_t index = 0;
     std::size_t steps = 0;
-    if (!execute_block(lines, index, variables, output, steps, false)) {
+    if (!execute_block(lines, index, variables, output, steps, false, false)) {
         output.clear();
         return false;
     }
@@ -169,15 +169,24 @@ bool DashInterpreter::execute_block(const std::vector<std::string>& lines,
                                     Variables& variables,
                                     std::vector<std::string>& output,
                                     std::size_t& steps,
-                                    bool stop_on_else) {
+                                    bool stop_on_else,
+                                    bool expect_end) {
     while (index < lines.size()) {
         if (++steps > kMaxExecutionSteps) {
             m_error = "Limite de 100.000 instruções por execução atingido.";
             return false;
         }
         const std::string line = lines[index];
-        if (line == "end") { ++index; return true; }
-        if (line == "else") return stop_on_else;
+        if (line == "end") {
+            if (!expect_end) { m_error = "Comando 'end' sem bloco aberto."; return false; }
+            ++index;
+            return true;
+        }
+        if (line == "else") {
+            if (stop_on_else) return true;
+            m_error = "Comando 'else' sem um 'if' correspondente.";
+            return false;
+        }
 
         if (line.rfind("say ", 0) == 0) {
             Value value;
@@ -246,7 +255,7 @@ bool DashInterpreter::execute_block(const std::vector<std::string>& lines,
             std::size_t after_body = body_start;
             for (int n = 0; n < static_cast<int>(count_number); ++n) {
                 std::size_t cursor = body_start;
-                if (!execute_block(lines, cursor, variables, output, steps, false)) return false;
+                if (!execute_block(lines, cursor, variables, output, steps, false, true)) return false;
                 after_body = cursor;
             }
             if (count_number == 0) {
@@ -269,7 +278,7 @@ bool DashInterpreter::execute_block(const std::vector<std::string>& lines,
             if (!evaluate_condition(line.substr(3), variables, condition)) return false;
             ++index;
             if (condition) {
-                if (!execute_block(lines, index, variables, output, steps, true)) return false;
+                if (!execute_block(lines, index, variables, output, steps, true, true)) return false;
                 if (index < lines.size() && lines[index] == "else") {
                     ++index;
                     std::size_t cursor = index;
@@ -296,7 +305,7 @@ bool DashInterpreter::execute_block(const std::vector<std::string>& lines,
                 if (depth != 0) { m_error = "Bloco if sem end."; return false; }
                 if (else_at != lines.size()) {
                     index = else_at + 1;
-                    if (!execute_block(lines, index, variables, output, steps, false)) return false;
+                    if (!execute_block(lines, index, variables, output, steps, false, true)) return false;
                 } else {
                     index = cursor;
                 }
@@ -305,6 +314,10 @@ bool DashInterpreter::execute_block(const std::vector<std::string>& lines,
         }
 
         m_error = "Não entendi esta linha: " + line;
+        return false;
+    }
+    if (expect_end) {
+        m_error = "Bloco incompleto: faltou 'end'.";
         return false;
     }
     return true;
