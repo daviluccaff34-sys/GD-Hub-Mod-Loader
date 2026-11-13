@@ -243,6 +243,7 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
         }, LinearLayout.LayoutParams(dp(42), dp(38)))
         overlayPanel.addView(header)
         header.contentDescription = "Arraste esta barra para mover o painel do GD Hub."
+        header.isClickable = true
         var panelDownX = 0f
         var panelDownY = 0f
         var panelStartX = 0f
