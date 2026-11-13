@@ -57,3 +57,13 @@ Quando o deploy terminar, o endereço `*.pages.dev` exibido pelo Cloudflare ser�
 ### O que precisa conectar (e o que não precisa)
 
 O Mod Creator gera os pacotes no próprio navegador, então não precisa de API, token ou Worker para compilar. O Worker `cloudflare/mod-catalog-worker.js` é um serviço separado, usado para publicar mods no catálogo público e moderar envios. Não coloque o segredo `ADMIN_TOKEN` no HTML, no aplicativo Android ou no GitHub. Siga `cloudflare/README.md` para configurar o catálogo.
+
+
+## Biblioteca de peças e construção
+- `code-pieces.js` disponibiliza 3.420 fragmentos independentes DashPT, pesquisáveis e inseríveis no cursor do editor; não são blocos visuais Scratch.
+- API pública no navegador: `GDHubPieces.registerPiece`, `getAll`, `search`, `insertPiece`.
+- O Mod Creator exporta `level/build.json` com objetos, grupos, triggers e propriedades. O schema fica em `construction-api.json`.
+- Esses dados ainda são rascunhos exportáveis; o runtime C++ não os converte em objetos reais no Geometry Dash.
+
+## Catálogo e publicação
+Abra `catalogo.html`. Informe a URL HTTPS do Worker Cloudflare implantado, carregue mods aprovados, publique um `.gdhb` e, se for administrador, revise envios pendentes. A URL é salva no armazenamento local do navegador. O token administrativo fica apenas no campo da sessão e não é persistido. O Worker precisa estar implantado com binding KV `MODS`; para moderação, configure o segredo `ADMIN_TOKEN`. O navegador deve permitir CORS para a origem do Pages.
