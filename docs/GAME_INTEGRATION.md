@@ -24,7 +24,7 @@ The two ABIs must be treated as separate targets. Android ARM64 class layouts, c
 
 ### Stage A — establish a verified game boundary
 
-Before calling game internals, identify and verify the exact 2.2081 Android library, ABI, Cocos types, scene lifecycle, and a stable point where the GD Hub component can be initialized. Keep version-specific details in a dedicated adapter; do not scatter offsets or assumptions through the runtime.
+Before calling game internals, identify and verify the exact 2.2081 Android library, ABI, Cocos types, scene lifecycle, and a stable point where the GD Hub component can be initialized. The user-provided APK audit has confirmed `libcocos2dcpp.so` for both ABIs and verified a small common set of exported Cocos symbols. GD Hub now has a runtime symbol probe that checks the already-loaded library without calling those functions. The game-process load point and scene attachment lifecycle remain unresolved. Keep version-specific details in a dedicated adapter; do not scatter offsets or assumptions through the runtime.
 
 ### Stage B — native in-game UI
 
@@ -40,6 +40,6 @@ Test ARM32 and ARM64 independently on Geometry Dash 2.2081. Verify startup, scen
 
 ## Current implementation status
 
-This document records the design and verified target profile only. The current APK is still a companion manager. No in-game button, Cocos scene attachment, game-side package path, or live game hook has been implemented yet.
+This document records the design and verified target profile. The current APK is still a companion manager. Implemented foundations now include safe-area layout calculation, a renderer-independent UI render plan, touch hit-testing, and a Cocos symbol probe. These are not a native Cocos backend: no in-game button, scene attachment, game-process loader integration, game-side package path, or live game hook has been implemented yet.
 
 Do not use guessed memory offsets, guessed function signatures, or another loader's private implementation as if they were verified GD Hub code. A Cocos UI source file alone is not proof of integration: it must be attached through a tested 2.2081 game adapter.
