@@ -35,6 +35,12 @@ int main() {
                 output[1] == "ready" && output[2] == "go" && output[3] == "go",
                 "variables, interpolation, if/else and repeat");
     ok &= check(!interpreter.run("say missing\n", output), "unknown variable is rejected");
+    ok &= check(!interpreter.run("repeat 1.5\nsay \"bad\"\nend\n", output),
+                "repeat rejects fractional counts");
+    const std::string runaway =
+        "repeat 1000\nrepeat 1000\nmake x = 1\nend\nend\n";
+    ok &= check(!interpreter.run(runaway, output) && output.empty(),
+                "execution budget stops excessive nested loops");
 
     const std::string package_path = "test_sample.gdhb";
     {
