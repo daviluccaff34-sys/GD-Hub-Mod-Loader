@@ -11,6 +11,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.os.Process
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
@@ -158,26 +159,63 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
 
     private fun buildModOverlay(root: FrameLayout) {
         val orb = TextView(this).apply {
-            text = "GD"
-            textSize = 14f
+            text = "⬡"
+            textSize = 29f
             setTextColor(Color.WHITE)
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
-            background = rounded(purple, 28)
-            elevation = dp(8).toFloat()
-            contentDescription = "Abrir painel do GD Hub"
-            setOnClickListener {
-                if (overlayPanel.visibility == View.VISIBLE) {
-                    overlayPanel.visibility = View.GONE
-                } else {
-                    refreshModList()
-                    overlayPanel.visibility = View.VISIBLE
-                }
+            background = rounded(Color.rgb(91, 55, 190), 19).apply {
+                setStroke(dp(2), Color.rgb(116, 220, 255))
             }
+            elevation = dp(10).toFloat()
+            contentDescription = "GD Hub flutuante. Arraste para mover ou toque para abrir."
         }
-        val orbParams = FrameLayout.LayoutParams(dp(54), dp(54), Gravity.BOTTOM or Gravity.END)
+        val orbParams = FrameLayout.LayoutParams(dp(52), dp(52), Gravity.BOTTOM or Gravity.END)
         orbParams.setMargins(0, 0, dp(14), dp(14))
         root.addView(orb, orbParams)
+        var downX = 0f
+        var downY = 0f
+        var startRight = dp(14)
+        var startBottom = dp(14)
+        var dragged = false
+        orb.setOnTouchListener { view, event ->
+            val params = view.layoutParams as FrameLayout.LayoutParams
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    downX = event.rawX
+                    downY = event.rawY
+                    startRight = params.rightMargin
+                    startBottom = params.bottomMargin
+                    dragged = false
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    val dx = (event.rawX - downX).toInt()
+                    val dy = (event.rawY - downY).toInt()
+                    if (kotlin.math.abs(dx) > dp(4) || kotlin.math.abs(dy) > dp(4)) dragged = true
+                    if (dragged) {
+                        params.rightMargin = (startRight - dx).coerceIn(0, (root.width - view.width).coerceAtLeast(0))
+                        params.bottomMargin = (startBottom - dy).coerceIn(0, (root.height - view.height).coerceAtLeast(0))
+                        view.layoutParams = params
+                    }
+                    true
+                }
+                MotionEvent.ACTION_UP -> {
+                    if (!dragged) {
+                        if (overlayPanel.visibility == View.VISIBLE) {
+                            overlayPanel.visibility = View.GONE
+                        } else {
+                            refreshModList()
+                            overlayPanel.visibility = View.VISIBLE
+                        }
+                        view.performClick()
+                    }
+                    true
+                }
+                MotionEvent.ACTION_CANCEL -> true
+                else -> false
+            }
+        }
 
         overlayPanel = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -231,8 +269,8 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
         }
         overlayPanel.addView(exit, LinearLayout.LayoutParams(-1, dp(42)))
 
-        val panelParams = FrameLayout.LayoutParams(dp(292), dp(340), Gravity.BOTTOM or Gravity.END)
-        panelParams.setMargins(0, 0, dp(14), dp(78))
+        val panelParams = FrameLayout.LayoutParams(dp(264), dp(292), Gravity.BOTTOM or Gravity.END)
+        panelParams.setMargins(0, 0, dp(12), dp(62))
         root.addView(overlayPanel, panelParams)
         refreshModList()
     }
