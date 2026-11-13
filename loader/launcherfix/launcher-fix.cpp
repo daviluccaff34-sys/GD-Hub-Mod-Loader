@@ -27,7 +27,7 @@ JNIEXPORT void JNICALL Java_com_gdhub_loader_LauncherFix_setDataPath(
 }
 
 extern "C"
-JNIEXPORT void JNICALL Java_com_geode_launcher_LauncherFix_setOriginalDataPath(
+JNIEXPORT void JNICALL Java_com_gdhub_loader_LauncherFix_setOriginalDataPath(
         JNIEnv *env,
         jobject,
         jstring data_path
@@ -41,12 +41,12 @@ JNIEXPORT void JNICALL Java_com_geode_launcher_LauncherFix_setOriginalDataPath(
 }
 
 extern "C"
-JNIEXPORT void JNICALL Java_com_geode_launcher_LauncherFix_enableExceptionsRenaming(JNIEnv*, jobject) {
+JNIEXPORT void JNICALL Java_com_gdhub_loader_LauncherFix_enableExceptionsRenaming(JNIEnv*, jobject) {
     DataPaths::patch_exceptions = true;
 }
 
 // this should be called after gd is loaded but before geode
-extern "C" JNIEXPORT void JNICALL Java_com_geode_launcher_LauncherFix_performPatches(JNIEnv*, jobject) {
+extern "C" JNIEXPORT void JNICALL Java_com_gdhub_loader_LauncherFix_performPatches(JNIEnv*, jobject) {
     dl_iterate_phdr(on_dl_iterate, nullptr);
 }
 
