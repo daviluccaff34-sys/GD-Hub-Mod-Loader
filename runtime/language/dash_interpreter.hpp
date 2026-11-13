@@ -23,6 +23,7 @@ private:
                        std::size_t& index,
                        Variables& variables,
                        std::vector<std::string>& output,
+                       std::size_t& steps,
                        bool stop_on_else);
 
     bool evaluate_condition(const std::string& condition,
