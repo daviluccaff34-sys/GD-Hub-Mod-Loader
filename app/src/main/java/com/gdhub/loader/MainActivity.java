@@ -7,85 +7,273 @@ import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.content.SharedPreferences;
 import android.view.Gravity;
+import android.view.View;
 import android.widget.*;
+import android.content.SharedPreferences;
+import org.json.JSONObject;
 import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends Activity {
-    private static final int PICK_PACKAGE=41, BG=0xFF0B0D18, PANEL=0xFF171A2B, PURPLE=0xFF895CFF, TEXT=0xFFF5F3FF, MUTED=0xFFA7A8C0;
+    private static final int PICK_PACKAGE=41, PICK_PUBLISH_PACKAGE=42;
+    private static final int BG=0xFF0B0D18, PANEL=0xFF171A2B, PURPLE=0xFF895CFF, TEXT=0xFFF5F3FF, MUTED=0xFFA7A8C0;
+    private static final long MAX_PACKAGE_BYTES=16L*1024*1024;
+    private static final ExecutorService NETWORK=Executors.newSingleThreadExecutor();
     private LinearLayout list;
     private TextView status;
+    private TextView publishStatus, selectedPackageLabel;
+    private EditText publishName, publishVersion, publishAuthor, publishDescription;
+    private File selectedPublishFile;
+    private LinearLayout managerPage, publishPage;
+    private Button managerTab, publishTab;
     private final ArrayList<File> packages=new ArrayList<>();
     private SharedPreferences modPrefs;
     private static final String PREFS_MODS="gdhub_mod_states";
+    private static final String PREFS_DRAFT="gdhub_publish_draft";
     static { System.loadLibrary("gdhub_loader"); }
     private native String nativeRunPackage(String absolutePath);
+
     private int dp(int n){return (int)(n*getResources().getDisplayMetrics().density+0.5f);}
     private GradientDrawable box(int color,int radius){GradientDrawable d=new GradientDrawable();d.setColor(color);d.setCornerRadius(dp(radius));return d;}
-    private Button button(String text,int color){Button b=new Button(this);b.setText(text);b.setAllCaps(false);b.setTextSize(14);b.setTypeface(Typeface.DEFAULT_BOLD);b.setTextColor(Color.WHITE);b.setBackground(box(color,13));b.setMinHeight(0);b.setMinimumHeight(0);return b;}
-    public void onCreate(Bundle state){super.onCreate(state);modPrefs=getSharedPreferences(PREFS_MODS,MODE_PRIVATE);buildUi();scanPackages();}
-    private void buildUi(){
-        ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setBackgroundColor(BG);
-        LinearLayout root=new LinearLayout(this);root.setOrientation(1);root.setPadding(dp(22),dp(24),dp(22),dp(22));scroll.addView(root);
-        LinearLayout brand=new LinearLayout(this);brand.setGravity(Gravity.CENTER_VERTICAL);
-        TextView logo=new TextView(this);logo.setText("GD");logo.setTextColor(-1);logo.setTextSize(21);logo.setTypeface(null,Typeface.BOLD);logo.setGravity(Gravity.CENTER);logo.setBackground(box(PURPLE,17));brand.addView(logo,new LinearLayout.LayoutParams(dp(58),dp(58)));
-        LinearLayout names=new LinearLayout(this);names.setOrientation(1);names.setPadding(dp(14),0,0,0);
-        TextView title=new TextView(this);title.setText("GD HUB");title.setTextColor(TEXT);title.setTextSize(27);title.setTypeface(null,Typeface.BOLD);names.addView(title);
-        TextView sub=new TextView(this);sub.setText("MOD MANAGER  •  ANDROID");sub.setTextColor(MUTED);sub.setTextSize(11);sub.setLetterSpacing(.08f);names.addView(sub);brand.addView(names);root.addView(brand,new LinearLayout.LayoutParams(-1,dp(68)));
-        TextView headline=new TextView(this);headline.setText("Seus pacotes. Seu controle.");headline.setTextColor(TEXT);headline.setTextSize(19);headline.setTypeface(null,Typeface.BOLD);headline.setPadding(0,dp(28),0,dp(5));root.addView(headline);
-        TextView hint=new TextView(this);hint.setText("Importe e execute pacotes .GDHB compatíveis.");hint.setTextColor(MUTED);hint.setTextSize(13);root.addView(hint);
-        Button launch=button("▶  INICIAR JOGO COM MOD LOADER",0xFF6842D8);
-        launch.setTextSize(14);
-        LinearLayout.LayoutParams launchParams=new LinearLayout.LayoutParams(-1,dp(54));
-        launchParams.topMargin=dp(22);
-        launchParams.bottomMargin=dp(10);
-        root.addView(launch,launchParams);
-        launch.setOnClickListener(v->launchGeometryDash());
+    private Button button(String text,int color){Button b=new Button(this);b.setText(text);b.setAllCaps(false);b.setTextSize(13);b.setTypeface(Typeface.DEFAULT_BOLD);b.setTextColor(Color.WHITE);b.setBackground(box(color,13));b.setMinHeight(0);b.setMinimumHeight(0);return b;}
+    private TextView text(String value,int size,int color,boolean bold){TextView t=new TextView(this);t.setText(value);t.setTextColor(color);t.setTextSize(size);if(bold)t.setTypeface(null,Typeface.BOLD);return t;}
+    private EditText field(String hint,boolean multiline){EditText e=new EditText(this);e.setSingleLine(!multiline);e.setTextSize(14);e.setTextColor(TEXT);e.setHintTextColor(MUTED);e.setHint(hint);e.setPadding(dp(14),dp(11),dp(14),dp(11));e.setBackground(box(PANEL,12));if(multiline){e.setMinLines(3);e.setGravity(Gravity.TOP|Gravity.START);}return e;}
 
-        LinearLayout actions=new LinearLayout(this);actions.setPadding(0,dp(8),0,dp(18));
-        Button add=button("+  Importar pacote",PURPLE);add.setOnClickListener(v->pickPackage());actions.addView(add,new LinearLayout.LayoutParams(0,dp(52),1));
-        Button refresh=button("↻",PANEL);refresh.setOnClickListener(v->scanPackages());LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(dp(58),dp(52));rp.leftMargin=dp(9);actions.addView(refresh,rp);root.addView(actions);
-        LinearLayout summary=new LinearLayout(this);summary.setOrientation(1);summary.setPadding(dp(16),dp(13),dp(16),dp(13));summary.setBackground(box(PANEL,14));
-        TextView label=new TextView(this);label.setText("BIBLIOTECA DE PACOTES");label.setTextColor(MUTED);label.setTextSize(11);label.setTypeface(null,Typeface.BOLD);summary.addView(label);
-        status=new TextView(this);status.setTextColor(TEXT);status.setTextSize(14);status.setPadding(0,dp(6),0,0);summary.addView(status);root.addView(summary,new LinearLayout.LayoutParams(-1,-2));
-        list=new LinearLayout(this);list.setOrientation(1);list.setPadding(0,dp(14),0,0);root.addView(list);
-        TextView footer=new TextView(this);footer.setText("GD HUB  •  ARM32 + ARM64  •  v0.1.0-alpha");footer.setTextColor(0xFF666982);footer.setTextSize(10);footer.setGravity(Gravity.CENTER);footer.setPadding(0,dp(28),0,dp(12));root.addView(footer);
-        setContentView(scroll);
+    public void onCreate(Bundle state){
+        super.onCreate(state);
+        modPrefs=getSharedPreferences(PREFS_MODS,MODE_PRIVATE);
+        buildUi();
+        restorePublishDraft();
+        scanPackages();
     }
+
+    private void buildUi(){
+        LinearLayout root=new LinearLayout(this);root.setOrientation(1);root.setPadding(dp(18),dp(20),dp(18),dp(12));root.setBackgroundColor(BG);
+        LinearLayout brand=new LinearLayout(this);brand.setGravity(Gravity.CENTER_VERTICAL);
+        TextView logo=text("GD",21,Color.WHITE,true);logo.setGravity(Gravity.CENTER);logo.setBackground(box(PURPLE,17));brand.addView(logo,new LinearLayout.LayoutParams(dp(54),dp(54)));
+        LinearLayout names=new LinearLayout(this);names.setOrientation(1);names.setPadding(dp(13),0,0,0);
+        names.addView(text("GD HUB",25,TEXT,true));names.addView(text("MOD MANAGER  •  ANDROID",10,MUTED,true));brand.addView(names);
+        root.addView(brand,new LinearLayout.LayoutParams(-1,dp(62)));
+
+        LinearLayout tabs=new LinearLayout(this);tabs.setOrientation(0);tabs.setPadding(0,dp(15),0,dp(12));
+        managerTab=button("MEUS MODS",PURPLE);publishTab=button("PUBLICAR MODS",PANEL);
+        tabs.addView(managerTab,new LinearLayout.LayoutParams(0,dp(46),1));
+        LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,dp(46),1);p.leftMargin=dp(8);tabs.addView(publishTab,p);
+        root.addView(tabs);
+        managerPage=buildManagerPage();
+        publishPage=buildPublishPage();
+        root.addView(managerPage,new LinearLayout.LayoutParams(-1,0,1));
+        root.addView(publishPage,new LinearLayout.LayoutParams(-1,0,1));
+        managerTab.setOnClickListener(v->showTab(false));
+        publishTab.setOnClickListener(v->showTab(true));
+        showTab(false);
+        setContentView(root);
+    }
+
+    private void showTab(boolean publishing){
+        managerPage.setVisibility(publishing?View.GONE:View.VISIBLE);
+        publishPage.setVisibility(publishing?View.VISIBLE:View.GONE);
+        managerTab.setBackground(box(publishing?PANEL:PURPLE,13));
+        publishTab.setBackground(box(publishing?PURPLE:PANEL,13));
+    }
+
+    private LinearLayout buildManagerPage(){
+        ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setBackgroundColor(BG);
+        LinearLayout page=new LinearLayout(this);page.setOrientation(1);page.setPadding(0,dp(8),0,dp(10));scroll.addView(page);
+        page.addView(text("Seus pacotes. Seu controle.",19,TEXT,true));
+        TextView hint=text("Importe e execute pacotes .GDHB compatíveis.",12,MUTED,false);hint.setPadding(0,dp(5),0,dp(12));page.addView(hint);
+        Button launch=button("▶  INICIAR JOGO COM MOD LOADER",0xFF6842D8);
+        LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(-1,dp(52));lp.bottomMargin=dp(10);page.addView(launch,lp);launch.setOnClickListener(v->launchGeometryDash());
+        LinearLayout actions=new LinearLayout(this);
+        Button add=button("+  Importar pacote",PURPLE);add.setOnClickListener(v->pickPackage());actions.addView(add,new LinearLayout.LayoutParams(0,dp(48),1));
+        Button refresh=button("↻",PANEL);refresh.setOnClickListener(v->scanPackages());LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(dp(56),dp(48));rp.leftMargin=dp(8);actions.addView(refresh,rp);page.addView(actions);
+        LinearLayout summary=new LinearLayout(this);summary.setOrientation(1);summary.setPadding(dp(15),dp(12),dp(15),dp(12));summary.setBackground(box(PANEL,14));
+        summary.addView(text("BIBLIOTECA DE PACOTES",10,MUTED,true));
+        status=text("Carregando…",13,TEXT,false);status.setPadding(0,dp(5),0,0);summary.addView(status);LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(-1,-2);sp.topMargin=dp(10);page.addView(summary,sp);
+        list=new LinearLayout(this);list.setOrientation(1);list.setPadding(0,dp(12),0,0);page.addView(list);
+        TextView footer=text("GD HUB  •  ARM32 + ARM64  •  v0.2.0-alpha",10,0xFF666982,false);footer.setGravity(Gravity.CENTER);footer.setPadding(0,dp(18),0,dp(8));page.addView(footer);
+        return scroll;
+    }
+
+    private LinearLayout buildPublishPage(){
+        ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setBackgroundColor(BG);
+        LinearLayout page=new LinearLayout(this);page.setOrientation(1);page.setPadding(0,dp(8),0,dp(18));scroll.addView(page);
+        page.addView(text("PUBLICAR UM MOD",20,TEXT,true));
+        TextView intro=text("Envie seu pacote GDHB para entrar no catálogo da comunidade. Os envios ficam pendentes de revisão antes de aparecer para todos.",12,MUTED,false);intro.setPadding(0,dp(6),0,dp(16));page.addView(intro);
+        Button choose=button("＋  ESCOLHER ARQUIVO .GDHB",PURPLE);page.addView(choose,new LinearLayout.LayoutParams(-1,dp(48)));choose.setOnClickListener(v->pickPublishPackage());
+        selectedPackageLabel=text("Nenhum pacote selecionado",11,MUTED,false);selectedPackageLabel.setPadding(dp(4),dp(8),dp(4),dp(14));page.addView(selectedPackageLabel);
+        page.addView(text("NOME DO MOD",10,MUTED,true));publishName=field("Ex.: Better Practice Mode",false);addField(page,publishName);
+        page.addView(text("VERSÃO",10,MUTED,true));publishVersion=field("Ex.: 1.0.0",false);addField(page,publishVersion);
+        page.addView(text("AUTOR",10,MUTED,true));publishAuthor=field("Seu nome ou apelido de criador",false);addField(page,publishAuthor);
+        page.addView(text("DESCRIÇÃO",10,MUTED,true));publishDescription=field("O que seu mod adiciona?",true);addField(page,publishDescription);
+        Button publish=button("PUBLICAR NO CATÁLOGO",0xFF6842D8);LinearLayout.LayoutParams pp=new LinearLayout.LayoutParams(-1,dp(52));pp.topMargin=dp(7);page.addView(publish,pp);publish.setOnClickListener(v->publishOrSaveDraft());
+        publishStatus=text("O catálogo online ainda precisa ser conectado.",11,MUTED,false);publishStatus.setPadding(dp(3),dp(10),dp(3),0);page.addView(publishStatus);
+        return scroll;
+    }
+
+    private void addField(LinearLayout page,EditText edit){LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.topMargin=dp(5);p.bottomMargin=dp(12);page.addView(edit,p);}
+
     private void pickPackage(){Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT);i.addCategory(Intent.CATEGORY_OPENABLE);i.setType("*/*");startActivityForResult(i,PICK_PACKAGE);}
-    protected void onActivityResult(int request,int result,Intent data){super.onActivityResult(request,result,data);if(request!=PICK_PACKAGE||result!=RESULT_OK||data==null)return;Uri uri=data.getData();if(uri==null)return;
-        File dir=new File(getFilesDir(),"mods");if(!dir.exists()&&!dir.mkdirs()){status.setText("Não foi possível criar a pasta.");return;}
-        String pickedName="package_"+System.currentTimeMillis()+".gdhb";
-        try(android.database.Cursor cursor=getContentResolver().query(uri,new String[]{android.provider.OpenableColumns.DISPLAY_NAME},null,null,null)){if(cursor!=null&&cursor.moveToFirst()){String candidate=cursor.getString(0);if(candidate!=null&&candidate.toLowerCase().endsWith(".gdhb"))pickedName=candidate.replaceAll("[^A-Za-z0-9._-]","_");}}catch(Exception ignored){}
-        File dest=new File(dir,pickedName);
-        if(dest.exists())dest=new File(dir,System.currentTimeMillis()+"_"+pickedName);
-        try(InputStream in=getContentResolver().openInputStream(uri);FileOutputStream out=new FileOutputStream(dest)){if(in==null)throw new IllegalStateException("Arquivo não pôde ser aberto.");byte[] buf=new byte[8192];int n;long total=0;while((n=in.read(buf))!=-1){total+=n;if(total>16L*1024*1024)throw new IllegalArgumentException("Pacote maior que 16 MiB.");out.write(buf,0,n);}scanPackages();status.setText("Pacote importado!");}catch(Exception e){dest.delete();status.setText("Falha ao importar: "+e.getMessage());}}
-    private void scanPackages(){list.removeAllViews();packages.clear();File dir=new File(getFilesDir(),"mods");File[] files=dir.listFiles((d,n)->n.toLowerCase().endsWith(".gdhb"));if(files!=null)for(File f:files)packages.add(f);
+    private void pickPublishPackage(){Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT);i.addCategory(Intent.CATEGORY_OPENABLE);i.setType("*/*");startActivityForResult(i,PICK_PUBLISH_PACKAGE);}
+
+    protected void onActivityResult(int request,int result,Intent data){
+        super.onActivityResult(request,result,data);
+        if(result!=RESULT_OK||data==null||data.getData()==null)return;
+        if(request==PICK_PACKAGE){importManagerPackage(data.getData());}
+        else if(request==PICK_PUBLISH_PACKAGE){importPublishPackage(data.getData());}
+    }
+
+    private String displayName(Uri uri){
+        try(android.database.Cursor cursor=getContentResolver().query(uri,new String[]{android.provider.OpenableColumns.DISPLAY_NAME},null,null,null)){
+            if(cursor!=null&&cursor.moveToFirst()){String name=cursor.getString(0);if(name!=null)return name;}
+        }catch(Exception ignored){}
+        return "package_"+System.currentTimeMillis()+".gdhb";
+    }
+
+    private File copyPackage(Uri uri,File directory) throws Exception {
+        if(!directory.exists()&&!directory.mkdirs())throw new IOException("Não foi possível criar a pasta.");
+        String name=displayName(uri).replaceAll("[^A-Za-z0-9._-]","_");
+        if(!name.toLowerCase().endsWith(".gdhb"))throw new IllegalArgumentException("Escolha um arquivo .gdhb.");
+        File dest=new File(directory,name);
+        if(dest.exists())dest=new File(directory,System.currentTimeMillis()+"_"+name);
+        try(InputStream in=getContentResolver().openInputStream(uri);FileOutputStream out=new FileOutputStream(dest)){
+            if(in==null)throw new IOException("Arquivo não pôde ser aberto.");
+            byte[] buf=new byte[8192];int n;long total=0;
+            while((n=in.read(buf))!=-1){total+=n;if(total>MAX_PACKAGE_BYTES)throw new IllegalArgumentException("Pacote maior que 16 MiB.");out.write(buf,0,n);}
+        }catch(Exception e){dest.delete();throw e;}
+        if(!isGdhb(dest)){dest.delete();throw new IllegalArgumentException("Arquivo inválido: cabeçalho GDHB não encontrado.");}
+        return dest;
+    }
+
+    private boolean isGdhb(File file){
+        try(InputStream in=new FileInputStream(file)){return in.read()=='G'&&in.read()=='D'&&in.read()=='H'&&in.read()=='B';}
+        catch(Exception e){return false;}
+    }
+
+    private void importManagerPackage(Uri uri){
+        try{copyPackage(uri,new File(getFilesDir(),"mods"));scanPackages();status.setText("Pacote importado!");}
+        catch(Exception e){status.setText("Falha ao importar: "+e.getMessage());}
+    }
+
+    private void importPublishPackage(Uri uri){
+        try{
+            selectedPublishFile=copyPackage(uri,new File(getFilesDir(),"publish_staging"));
+            selectedPackageLabel.setText("✓  "+selectedPublishFile.getName()+"  •  "+(selectedPublishFile.length()/1024)+" KB");
+            publishStatus.setText("Pacote validado. Preencha os dados para publicar.");
+            saveDraft();
+        }catch(Exception e){publishStatus.setText("Falha ao selecionar: "+e.getMessage());}
+    }
+
+    private void restorePublishDraft(){
+        SharedPreferences p=getSharedPreferences(PREFS_DRAFT,MODE_PRIVATE);
+        if(publishName!=null)publishName.setText(p.getString("name",""));
+        if(publishVersion!=null)publishVersion.setText(p.getString("version",""));
+        if(publishAuthor!=null)publishAuthor.setText(p.getString("author",""));
+        if(publishDescription!=null)publishDescription.setText(p.getString("description",""));
+        String path=p.getString("file","");
+        if(path!=null&&!path.isEmpty()){File f=new File(path);if(f.isFile()&&isGdhb(f)){selectedPublishFile=f;selectedPackageLabel.setText("✓  "+f.getName()+"  •  "+(f.length()/1024)+" KB");}}
+    }
+
+    private void saveDraft(){
+        getSharedPreferences(PREFS_DRAFT,MODE_PRIVATE).edit()
+            .putString("name",publishName.getText().toString().trim())
+            .putString("version",publishVersion.getText().toString().trim())
+            .putString("author",publishAuthor.getText().toString().trim())
+            .putString("description",publishDescription.getText().toString().trim())
+            .putString("file",selectedPublishFile==null?"":selectedPublishFile.getAbsolutePath()).apply();
+    }
+
+    private void publishOrSaveDraft(){
+        String name=publishName.getText().toString().trim(), version=publishVersion.getText().toString().trim();
+        String author=publishAuthor.getText().toString().trim(), description=publishDescription.getText().toString().trim();
+        if(selectedPublishFile==null||!selectedPublishFile.isFile()){publishStatus.setText("Escolha primeiro um pacote .gdhb.");return;}
+        if(name.isEmpty()||version.isEmpty()||author.isEmpty()||description.isEmpty()){publishStatus.setText("Preencha nome, versão, autor e descrição.");return;}
+        saveDraft();
+        String endpoint=BuildConfig.GDHUB_PUBLISH_API.trim();
+        if(endpoint.isEmpty()){
+            publishStatus.setText("Rascunho salvo! O servidor público ainda não está conectado. Nenhum mod foi enviado.");
+            return;
+        }
+        publishStatus.setText("Enviando pacote…");
+        setPublishControlsEnabled(false);
+        NETWORK.execute(()->{
+            String result;
+            try{result=uploadMod(endpoint,selectedPublishFile,name,version,author,description);}
+            catch(Exception e){result="Falha no envio: "+e.getMessage();}
+            final String message=result;
+            runOnUiThread(()->{publishStatus.setText(message);setPublishControlsEnabled(true);});
+        });
+    }
+
+    private void setPublishControlsEnabled(boolean enabled){
+        publishName.setEnabled(enabled);publishVersion.setEnabled(enabled);publishAuthor.setEnabled(enabled);publishDescription.setEnabled(enabled);
+    }
+
+    private String uploadMod(String endpoint,File file,String name,String version,String author,String description) throws Exception {
+        String base=endpoint.endsWith("/")?endpoint.substring(0,endpoint.length()-1):endpoint;
+        String boundary="----GDHub"+UUID.randomUUID().toString().replace("-","");
+        HttpURLConnection connection=(HttpURLConnection)new URL(base+"/v1/mods").openConnection();
+        connection.setRequestMethod("POST");connection.setDoOutput(true);connection.setConnectTimeout(15000);connection.setReadTimeout(30000);
+        connection.setRequestProperty("Content-Type","multipart/form-data; boundary="+boundary);
+        connection.setRequestProperty("Accept","application/json");
+        try(OutputStream out=connection.getOutputStream()){
+            writePart(out,boundary,"name",name);writePart(out,boundary,"version",version);
+            writePart(out,boundary,"author",author);writePart(out,boundary,"description",description);
+            String fileHeader="--"+boundary+"\r\nContent-Disposition: form-data; name=\"file\"; filename=\""+file.getName()+"\"\r\nContent-Type: application/octet-stream\r\n\r\n";
+            out.write(fileHeader.getBytes(StandardCharsets.UTF_8));
+            try(InputStream in=new FileInputStream(file)){byte[] buffer=new byte[8192];int n;while((n=in.read(buffer))!=-1)out.write(buffer,0,n);}
+            out.write(("\r\n--"+boundary+"--\r\n").getBytes(StandardCharsets.UTF_8));
+        }
+        int code=connection.getResponseCode();
+        InputStream response=code>=200&&code<400?connection.getInputStream():connection.getErrorStream();
+        String body="";
+        if(response!=null)try(InputStream in=response;ByteArrayOutputStream bytes=new ByteArrayOutputStream()){byte[] b=new byte[4096];int n;while((n=in.read(b))!=-1)bytes.write(b,0,n);body=new String(bytes.toByteArray(),StandardCharsets.UTF_8);}
+        connection.disconnect();
+        if(code==201){JSONObject json=new JSONObject(body);return "Enviado para revisão! ID: "+json.optString("id","recebido")+". Ainda não aparece no catálogo público.";}
+        return "Servidor respondeu HTTP "+code+": "+(body.length()>220?body.substring(0,220):body);
+    }
+
+    private void writePart(OutputStream out,String boundary,String name,String value) throws IOException {
+        String part="--"+boundary+"\r\nContent-Disposition: form-data; name=\""+name+"\"\r\n\r\n"+value+"\r\n";
+        out.write(part.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private void scanPackages(){
+        list.removeAllViews();packages.clear();File dir=new File(getFilesDir(),"mods");
+        File[] files=dir.listFiles((d,n)->n.toLowerCase().endsWith(".gdhb"));
+        if(files!=null)for(File f:files)packages.add(f);
         status.setText(packages.size()+(packages.size()==1?" pacote instalado":" pacotes instalados"));
-        if(packages.isEmpty()){TextView empty=new TextView(this);empty.setText("Ainda está vazio por aqui.\nToque em “Importar pacote” para começar.");empty.setTextColor(MUTED);empty.setTextSize(13);empty.setGravity(Gravity.CENTER);empty.setPadding(dp(16),dp(24),dp(16),dp(24));empty.setBackground(box(PANEL,14));list.addView(empty);return;}
-        for(File file:packages){LinearLayout card=new LinearLayout(this);card.setOrientation(1);card.setPadding(dp(15),dp(13),dp(15),dp(13));card.setBackground(box(PANEL,14));LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-1,-2);cp.bottomMargin=dp(10);list.addView(card,cp);
-            TextView name=new TextView(this);name.setText("▣  "+file.getName());name.setTextColor(TEXT);name.setTextSize(14);name.setTypeface(null,Typeface.BOLD);card.addView(name);
-            TextView meta=new TextView(this);meta.setText("PACOTE GDHB  •  ARMAZENADO NO APP");meta.setTextColor(MUTED);meta.setTextSize(10);meta.setPadding(0,dp(5),0,dp(12));card.addView(meta);
-            Switch enabled=new Switch(this);enabled.setText("Ativado no gerenciador");enabled.setTextColor(TEXT);enabled.setTextSize(12);enabled.setChecked(modPrefs.getBoolean(file.getName(),false));enabled.setOnCheckedChangeListener((button,checked)->modPrefs.edit().putBoolean(file.getName(),checked).apply());card.addView(enabled);
-            LinearLayout row=new LinearLayout(this);Button run=button("Validar e executar",PURPLE);run.setOnClickListener(v->runPackage(file));row.addView(run,new LinearLayout.LayoutParams(0,dp(44),1));
-            Button del=button("Remover",0xFF30202D);del.setTextColor(0xFFFFA6B5);del.setOnClickListener(v->{if(file.delete())scanPackages();else status.setText("Não foi possível remover.");});LinearLayout.LayoutParams deleteParams=new LinearLayout.LayoutParams(dp(100),dp(44));deleteParams.leftMargin=dp(8);row.addView(del,deleteParams);card.addView(row);
-        }}
+        if(packages.isEmpty()){TextView empty=text("Ainda está vazio por aqui.\nToque em “Importar pacote” para começar.",12,MUTED,false);empty.setGravity(Gravity.CENTER);empty.setPadding(dp(16),dp(24),dp(16),dp(24));empty.setBackground(box(PANEL,14));list.addView(empty);return;}
+        for(File file:packages){
+            LinearLayout card=new LinearLayout(this);card.setOrientation(1);card.setPadding(dp(14),dp(12),dp(14),dp(12));card.setBackground(box(PANEL,14));
+            LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-1,-2);cp.bottomMargin=dp(9);list.addView(card,cp);
+            card.addView(text("▣  "+file.getName(),13,TEXT,true));
+            TextView meta=text("PACOTE GDHB  •  ARMAZENADO NO APP",9,MUTED,false);meta.setPadding(0,dp(5),0,dp(10));card.addView(meta);
+            Switch enabled=new Switch(this);enabled.setText("Ativado no gerenciador");enabled.setTextColor(TEXT);enabled.setTextSize(11);enabled.setChecked(modPrefs.getBoolean(file.getName(),false));
+            enabled.setOnCheckedChangeListener((button,checked)->modPrefs.edit().putBoolean(file.getName(),checked).apply());card.addView(enabled);
+            LinearLayout row=new LinearLayout(this);Button run=button("Validar e executar",PURPLE);run.setOnClickListener(v->runPackage(file));row.addView(run,new LinearLayout.LayoutParams(0,dp(42),1));
+            Button del=button("Remover",0xFF30202D);del.setTextColor(0xFFFFA6B5);del.setOnClickListener(v->{if(file.delete())scanPackages();else status.setText("Não foi possível remover.");});
+            LinearLayout.LayoutParams dp=new LinearLayout.LayoutParams(dp(92),dp(42));dp.leftMargin=dp(8);row.addView(del,dp);card.addView(row);
+        }
+    }
+
     private void launchGeometryDash(){
         final String gamePackage="com.robtopx.geometryjump";
         try{
             Intent launch=getPackageManager().getLaunchIntentForPackage(gamePackage);
-            if(launch==null){
-                status.setText("Geometry Dash não encontrado. Instale o jogo oficial primeiro.");
-                return;
-            }
+            if(launch==null){status.setText("Geometry Dash não encontrado. Instale o jogo oficial primeiro.");return;}
             launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            status.setText("Abrindo Geometry Dash… O botão ainda não injeta o loader: a integração dentro do jogo está em desenvolvimento.");
+            status.setText("Abrindo Geometry Dash… A integração dentro do jogo ainda está em desenvolvimento.");
             startActivity(launch);
-        }catch(Exception e){
-            status.setText("Não foi possível iniciar o Geometry Dash: "+e.getMessage());
-        }
+        }catch(Exception e){status.setText("Não foi possível iniciar o Geometry Dash: "+e.getMessage());}
     }
+
     private void runPackage(File file){try{status.setText(nativeRunPackage(file.getAbsolutePath()));}catch(Throwable e){status.setText("Erro no runtime nativo: "+e.getMessage());}}
 }
