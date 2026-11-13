@@ -20,7 +20,7 @@ The intended in-game skin follows Geometry Dash's compact arcade-menu language r
 - no full-screen dimmer, side rail, top bar, or extra corner widgets;
 - panel and launcher must stay within the game visible-area safe insets and scale down on narrow viewports.
 
-`game_ui_layout.hpp/.cpp` calculates the compact launcher and centered panel rectangles from the visible game size and safe-area insets. Coordinates use a bottom-left origin in game points. This is geometry and a renderer-independent draw plan only; the Cocos adapter must translate these instructions into actual nodes.
+`game_ui_layout.hpp/.cpp` calculates the compact launcher and centered panel rectangles from the visible game size and safe-area insets. Coordinates use a bottom-left origin in game points. This is geometry and a renderer-independent draw plan and touch hit-testing only; the Cocos adapter must translate these instructions into actual nodes.
 
 ## Implemented here
 
@@ -32,7 +32,7 @@ The intended in-game skin follows Geometry Dash's compact arcade-menu language r
 
 ## Not implemented yet
 
-This is a compiled integration boundary, not a live Geometry Dash plugin. There is no concrete Cocos2d-x backend, no scene attachment, no game entry point, no live package catalog connected to the companion app, and no real UI rendered in Geometry Dash yet. The callbacks must be owned by a long-lived bridge instance; the eventual adapter must detach UI nodes and callbacks before destroying it.
+This is a compiled integration boundary, not a live Geometry Dash plugin. There is still no concrete Cocos2d-x backend, scene attachment, game entry point, live package catalog connected to the companion app, or UI rendered in Geometry Dash. The touch hit-test is a tested platform-independent component, not a native Cocos touch listener. The callbacks must be owned by a long-lived bridge instance; the eventual adapter must detach UI nodes and callbacks before destroying it.
 
 ## Adapter requirements
 
