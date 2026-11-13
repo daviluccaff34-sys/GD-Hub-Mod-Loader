@@ -70,3 +70,5 @@ The code-piece and construction editors are authoring/export tools. They do not 
 
 - [x] Reduce the in-game floating launcher from 52dp to 40dp.
 - [x] Reduce the companion in-game panel to 240×260dp and allow dragging it by the header; launcher dragging remains enabled.
+
+- [x] Add a Hello DashPT example with source DashPT and compiled DashCode for the current interpreter.
