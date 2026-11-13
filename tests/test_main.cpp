@@ -3,6 +3,7 @@
 #include "runtime/mod_runtime.hpp"
 #include "runtime/c_api/gdhub_c_api.h"
 #include "loader/game/game_ui_bridge.hpp"
+#include "loader/game/game_ui_layout.hpp"
 #include <cstdio>
 #include <fstream>
 #include <iostream>
@@ -169,6 +170,23 @@ int main() {
         out.put('x');
     }
     ok &= check(!reader.inspect(bad_path, info), "GDHB rejects directory traversal paths");
+
+
+    const auto layout = gdhub::game::calculate_game_ui_layout(
+        {800.0f, 450.0f}, {12.0f, 8.0f, 12.0f, 8.0f});
+    ok &= check(layout.floating_button.x > 700.0f &&
+                layout.floating_button.y < 40.0f &&
+                layout.floating_button.width <= 44.0f,
+                "floating GD Hub button stays compact at lower-right");
+    ok &= check(layout.panel.x > 0.0f && layout.panel.y > 0.0f &&
+                layout.panel.x + layout.panel.width < 800.0f &&
+                layout.panel.y + layout.panel.height < 450.0f,
+                "mod panel stays centered inside safe margins");
+    const auto narrow_layout = gdhub::game::calculate_game_ui_layout(
+        {320.0f, 240.0f}, {0.0f, 0.0f, 0.0f, 0.0f});
+    ok &= check(narrow_layout.panel.width < 320.0f &&
+                narrow_layout.panel.height < 240.0f,
+                "panel shrinks on smaller game viewports");
 
     TestGameUiHost ui_host;
     TestModCatalog mod_catalog;
