@@ -107,7 +107,12 @@ class Cocos2dxRenderer(private var handler: Cocos2dxGLSurfaceView) : GLSurfaceVi
         if (!nativeInitialized && width > 0 && height > 0) {
             nativeInit(width, height)
             nativeInitialized = true
-            runCatching { com.gdhub.loader.GdHubRuntime.nativeOnGameReady() }
+            runCatching {
+                val state = com.gdhub.loader.GdHubRuntime.nativeOnGameReady()
+                com.gdhub.loader.GeometryDashActivity.onNativeRuntimeReady(state)
+            }.onFailure { error ->
+                com.gdhub.loader.GeometryDashActivity.onNativeRuntimeReady("Runtime GD Hub falhou: ${error.message}")
+            }
         }
         if (setFrameRate && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             handler.updateRefreshRate()
