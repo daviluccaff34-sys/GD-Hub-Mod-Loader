@@ -106,6 +106,7 @@ class Cocos2dxRenderer(private var handler: Cocos2dxGLSurfaceView) : GLSurfaceVi
         if (!nativeInitialized && width > 0 && height > 0) {
             nativeInit(width, height)
             nativeInitialized = true
+            runCatching { com.gdhub.loader.GdHubRuntime.nativeOnGameReady() }
         }
         if (setFrameRate && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             handler.updateRefreshRate()
