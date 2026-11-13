@@ -1,18 +1,13 @@
 # GD Hub Mod Studio
 
-Site estático para Cloudflare Pages. Não precisa de build command.
+O Studio está publicado diretamente como Cloudflare Worker estático, sem integração do repositório GitHub.
 
-## Publicar no Cloudflare Pages sem conectar ao GitHub
+- Studio: https://gdhub-studio.daviluccaff34.workers.dev/
+- Catálogo/API: https://gdhub-mod-catalog.daviluccaff34.workers.dev/
+- O Worker do Studio serve os arquivos da pasta `studio/` e a documentação pública selecionada.
+- Para atualizar o site, gere novamente o Worker `gdhub-studio` com os arquivos atuais da pasta `studio/`.
 
-A pasta `studio/` é um site estático. Para publicar diretamente, sem integração com GitHub:
-
-1. No painel Cloudflare, abra **Workers & Pages** e crie uma aplicação **Pages**.
-2. Escolha a opção de **Direct Upload / Upload assets** (não Connect to Git).
-3. Envie o conteúdo da pasta `studio/` como os arquivos do site.
-4. Confirme que `index.html` está na raiz do upload.
-5. Finalize o deploy. O endereço `*.pages.dev` será exibido pelo Cloudflare.
-
-A página inicial `index.html` agora é o próprio Mod Creator. O catálogo e a documentação ficam nos links do topo. Para atualizar, envie novamente os arquivos atualizados da pasta `studio/`.
+O deploy foi criado pela API Cloudflare em 13/11/2026; o subdomínio workers.dev está habilitado. Consulte `cloudflare/DEPLOYMENT.md` para os detalhes e o segredo de moderação pendente.
 
 ## O que funciona
 
@@ -44,7 +39,7 @@ O pacote gerado é reconhecido pelo leitor GDHB e o script principal usa a lingu
 
 ## Cloudflare: catálogo e Worker
 
-O site Pages é publicado por upload direto e não precisa conectar o repositório GitHub. O Worker do catálogo é um serviço separado. Informe a URL HTTPS dele em `catalogo.html`. O Worker precisa ter o binding KV `MODS`; para aprovar envios, configure o segredo `ADMIN_TOKEN`.
+O Studio e o catálogo estão publicados como Workers separados, sem conexão com o repositório GitHub. O catálogo já tem o binding KV `MODS` configurado. Para habilitar aprovação de envios, configure o segredo `ADMIN_TOKEN` seguindo `cloudflare/DEPLOYMENT.md`.
 
 ### O que precisa conectar (e o que não precisa)
 
@@ -58,7 +53,7 @@ O Mod Creator gera os pacotes no próprio navegador, então não precisa de API,
 - Esses dados ainda são rascunhos exportáveis; o runtime C++ não os converte em objetos reais no Geometry Dash.
 
 ## Catálogo e publicação
-Abra `catalogo.html`. Informe a URL HTTPS do Worker Cloudflare implantado, carregue mods aprovados, publique um `.gdhb` e, se for administrador, revise envios pendentes. A URL é salva no armazenamento local do navegador. O token administrativo fica apenas no campo da sessão e não é persistido. O Worker precisa estar implantado com binding KV `MODS`; para moderação, configure o segredo `ADMIN_TOKEN`. O navegador deve permitir CORS para a origem do Pages.
+Abra `catalogo.html`. Informe a URL HTTPS do Worker Cloudflare implantado, carregue mods aprovados, publique um `.gdhb` e, se for administrador, revise envios pendentes. A URL é salva no armazenamento local do navegador. O token administrativo fica apenas no campo da sessão e não é persistido. O Worker precisa estar implantado com binding KV `MODS`; para moderação, configure o segredo `ADMIN_TOKEN`. O Worker do catálogo responde com CORS aberto para o Studio.
 
 ### Construction JavaScript API
 `construction-api.js` exports `GDHubBuild` with createObject, setObjectProperty, createGroup, addToGroup, createTrigger, configureTrigger, remove, reset and getData. The editor uses this API to create the exported draft. It does not call native Geometry Dash functions.
