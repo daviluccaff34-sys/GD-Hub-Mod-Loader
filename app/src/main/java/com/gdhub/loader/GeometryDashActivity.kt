@@ -160,17 +160,17 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
     private fun buildModOverlay(root: FrameLayout) {
         val orb = TextView(this).apply {
             text = "⬡"
-            textSize = 29f
+            textSize = 23f
             setTextColor(Color.WHITE)
             typeface = Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
-            background = rounded(Color.rgb(91, 55, 190), 19).apply {
-                setStroke(dp(2), Color.rgb(116, 220, 255))
+            background = rounded(Color.rgb(91, 55, 190), 15).apply {
+                setStroke(dp(1), Color.rgb(116, 220, 255))
             }
             elevation = dp(10).toFloat()
             contentDescription = "GD Hub flutuante. Arraste para mover ou toque para abrir."
         }
-        val orbParams = FrameLayout.LayoutParams(dp(52), dp(52), Gravity.BOTTOM or Gravity.END)
+        val orbParams = FrameLayout.LayoutParams(dp(40), dp(40), Gravity.BOTTOM or Gravity.END)
         orbParams.setMargins(0, 0, dp(14), dp(14))
         root.addView(orb, orbParams)
         var downX = 0f
@@ -242,6 +242,38 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
             setOnClickListener { overlayPanel.visibility = View.GONE }
         }, LinearLayout.LayoutParams(dp(42), dp(38)))
         overlayPanel.addView(header)
+        header.contentDescription = "Arraste esta barra para mover o painel do GD Hub."
+        var panelDownX = 0f
+        var panelDownY = 0f
+        var panelStartX = 0f
+        var panelStartY = 0f
+        header.setOnTouchListener { view, event ->
+            val params = overlayPanel.layoutParams as FrameLayout.LayoutParams
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    panelDownX = event.rawX
+                    panelDownY = event.rawY
+                    panelStartX = overlayPanel.x
+                    panelStartY = overlayPanel.y
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    val dx = event.rawX - panelDownX
+                    val dy = event.rawY - panelDownY
+                    if (kotlin.math.abs(dx) > dp(2) || kotlin.math.abs(dy) > dp(2)) {
+                        params.gravity = Gravity.TOP or Gravity.LEFT
+                        params.leftMargin = (panelStartX + dx).toInt().coerceIn(0, (root.width - overlayPanel.width).coerceAtLeast(0))
+                        params.topMargin = (panelStartY + dy).toInt().coerceIn(0, (root.height - overlayPanel.height).coerceAtLeast(0))
+                        params.rightMargin = 0
+                        params.bottomMargin = 0
+                        overlayPanel.layoutParams = params
+                    }
+                    true
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> true
+                else -> false
+            }
+        }
 
         output = TextView(this).apply {
             text = "Preparando runtime do GD Hub…"
@@ -269,8 +301,8 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
         }
         overlayPanel.addView(exit, LinearLayout.LayoutParams(-1, dp(42)))
 
-        val panelParams = FrameLayout.LayoutParams(dp(264), dp(292), Gravity.BOTTOM or Gravity.END)
-        panelParams.setMargins(0, 0, dp(12), dp(62))
+        val panelParams = FrameLayout.LayoutParams(dp(240), dp(260), Gravity.BOTTOM or Gravity.END)
+        panelParams.setMargins(0, 0, dp(10), dp(50))
         root.addView(overlayPanel, panelParams)
         refreshModList()
     }
