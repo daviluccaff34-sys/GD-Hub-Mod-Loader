@@ -4,6 +4,7 @@
 #include "runtime/c_api/gdhub_c_api.h"
 #include "loader/game/game_ui_bridge.hpp"
 #include "loader/game/game_ui_layout.hpp"
+#include "loader/game/game_ui_render_plan.hpp"
 #include <cstdio>
 #include <fstream>
 #include <iostream>
@@ -187,6 +188,47 @@ int main() {
     ok &= check(narrow_layout.panel.width < 320.0f &&
                 narrow_layout.panel.height < 240.0f,
                 "panel shrinks on smaller game viewports");
+
+    const std::vector<gdhub::game::ModEntry> render_mods = {
+        {"demo.enabled", "Enabled Demo", true},
+        {"demo.disabled", "Disabled Demo", false}
+    };
+    const auto closed_plan = gdhub::game::build_game_ui_render_plan(
+        layout, false, render_mods);
+    ok &= check(closed_plan.items.size() == 1 &&
+                closed_plan.hit_targets.size() == 1 &&
+                closed_plan.hit_targets[0].action == gdhub::game::UiHitAction::OpenPanel,
+                "closed render plan contains only the floating launcher");
+    const auto open_plan = gdhub::game::build_game_ui_render_plan(
+        layout, true, render_mods);
+    bool has_close = false;
+    bool has_enabled_toggle = false;
+    bool has_disabled_toggle = false;
+    for (const auto& hit : open_plan.hit_targets) {
+        if (hit.action == gdhub::game::UiHitAction::ClosePanel) has_close = true;
+        if (hit.action == gdhub::game::UiHitAction::ToggleMod &&
+            hit.mod_id == "demo.enabled") has_enabled_toggle = true;
+        if (hit.action == gdhub::game::UiHitAction::ToggleMod &&
+            hit.mod_id == "demo.disabled") has_disabled_toggle = true;
+    }
+    ok &= check(has_close && has_enabled_toggle && has_disabled_toggle,
+                "open render plan exposes close and per-mod hit targets");
+    bool has_lime_track = false;
+    bool has_muted_track = false;
+    for (const auto& draw : open_plan.items) {
+        if (draw.kind == gdhub::game::UiDrawKind::ToggleTrack && draw.active)
+            has_lime_track = draw.fill.g > 200;
+        if (draw.kind == gdhub::game::UiDrawKind::ToggleTrack && !draw.active)
+            has_muted_track = draw.fill.g < 150;
+    }
+    ok &= check(has_lime_track && has_muted_track,
+                "render plan visually distinguishes enabled and disabled mods");
+    const auto empty_plan = gdhub::game::build_game_ui_render_plan(
+        layout, true, {});
+    bool has_empty_label = false;
+    for (const auto& draw : empty_plan.items)
+        if (draw.text == "NO MODS INSTALLED") has_empty_label = true;
+    ok &= check(has_empty_label, "empty package list gets an in-panel message");
 
     TestGameUiHost ui_host;
     TestModCatalog mod_catalog;
