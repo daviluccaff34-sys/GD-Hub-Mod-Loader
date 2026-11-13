@@ -48,40 +48,30 @@ public class MainActivity extends Activity {
         super.onCreate(state);
         modPrefs=getSharedPreferences(PREFS_MODS,MODE_PRIVATE);
         buildUi();
-        restorePublishDraft();
         scanPackages();
     }
 
     private void buildUi(){
-        LinearLayout root=new LinearLayout(this);root.setOrientation(1);root.setPadding(dp(18),dp(20),dp(18),dp(12));root.setBackgroundColor(BG);
-        LinearLayout brand=new LinearLayout(this);brand.setGravity(Gravity.CENTER_VERTICAL);
-        TextView logo=text("GD",21,Color.WHITE,true);logo.setGravity(Gravity.CENTER);logo.setBackground(box(PURPLE,17));brand.addView(logo,new LinearLayout.LayoutParams(dp(54),dp(54)));
-        LinearLayout names=new LinearLayout(this);names.setOrientation(1);names.setPadding(dp(13),0,0,0);
-        names.addView(text("GD HUB",25,TEXT,true));names.addView(text("MOD MANAGER  •  ANDROID",10,MUTED,true));brand.addView(names);
+        LinearLayout root=new LinearLayout(this);
+        root.setOrientation(1);
+        root.setPadding(dp(18),dp(20),dp(18),dp(12));
+        root.setBackgroundColor(BG);
+        LinearLayout brand=new LinearLayout(this);
+        brand.setGravity(Gravity.CENTER_VERTICAL);
+        TextView logo=text("GD",21,Color.WHITE,true);
+        logo.setGravity(Gravity.CENTER);
+        logo.setBackground(box(PURPLE,17));
+        brand.addView(logo,new LinearLayout.LayoutParams(dp(54),dp(54)));
+        LinearLayout names=new LinearLayout(this);
+        names.setOrientation(1); names.setPadding(dp(13),0,0,0);
+        names.addView(text("GD HUB",25,TEXT,true));
+        names.addView(text("MOD MANAGER  •  ANDROID",10,MUTED,true));
+        brand.addView(names);
         root.addView(brand,new LinearLayout.LayoutParams(-1,dp(62)));
-
-        LinearLayout tabs=new LinearLayout(this);tabs.setOrientation(0);tabs.setPadding(0,dp(15),0,dp(12));
-        managerTab=button("MEUS MODS",PURPLE);publishTab=button("PUBLICAR MODS",PANEL);
-        tabs.addView(managerTab,new LinearLayout.LayoutParams(0,dp(46),1));
-        LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,dp(46),1);p.leftMargin=dp(8);tabs.addView(publishTab,p);
-        root.addView(tabs);
         managerPage=buildManagerPage();
-        publishPage=buildPublishPage();
         root.addView(managerPage,new LinearLayout.LayoutParams(-1,0,1));
-        root.addView(publishPage,new LinearLayout.LayoutParams(-1,0,1));
-        managerTab.setOnClickListener(v->showTab(false));
-        publishTab.setOnClickListener(v->showTab(true));
-        showTab(false);
         setContentView(root);
     }
-
-    private void showTab(boolean publishing){
-        managerPage.setVisibility(publishing?View.GONE:View.VISIBLE);
-        publishPage.setVisibility(publishing?View.VISIBLE:View.GONE);
-        managerTab.setBackground(box(publishing?PANEL:PURPLE,13));
-        publishTab.setBackground(box(publishing?PURPLE:PANEL,13));
-    }
-
     private View buildManagerPage(){
         ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setBackgroundColor(BG);
         LinearLayout page=new LinearLayout(this);page.setOrientation(1);page.setPadding(0,dp(8),0,dp(10));scroll.addView(page);
