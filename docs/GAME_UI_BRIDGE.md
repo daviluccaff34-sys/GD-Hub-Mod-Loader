@@ -10,15 +10,28 @@ This module defines the boundary between GD Hub's game-independent UI controller
 - Toggle requests are sent to the catalog; the panel is refreshed from catalog state.
 - The close callback hides the panel.
 
+## Visual design contract
+
+The intended in-game skin follows Geometry Dash's compact arcade-menu language rather than Android Material UI:
+- deep navy/near-black panel surface with a bright cyan/blue outline and small lime/yellow state accents;
+- rounded, beveled-looking controls with bold, high-contrast labels;
+- one small circular GD Hub launcher at the lower-right only;
+- a single centered panel, with its close control inside the panel header;
+- no full-screen dimmer, side rail, top bar, or extra corner widgets;
+- panel and launcher must stay within the game visible-area safe insets and scale down on narrow viewports.
+
+`game_ui_layout.hpp/.cpp` calculates the compact launcher and centered panel rectangles from the visible game size and safe-area insets. Coordinates use a bottom-left origin in game points. This is geometry only; the Cocos adapter must apply the style and create the actual nodes.
+
 ## Implemented here
 
 - `GameUiHost`: interface for a game-specific UI backend.
 - `ModCatalog`: interface for listing and activating installed packages.
 - `GameUiBridge`: UI state controller with game-thread checks.
+- `calculate_game_ui_layout`: tested pure layout calculation for the lower-right launcher and centered safe-area panel.
 
 ## Not implemented yet
 
-This is a compiled integration boundary, not a live Geometry Dash plugin. There is no concrete Cocos2d-x backend, no scene attachment, no game entry point, and no package catalog connected to the companion app yet. The callbacks must be owned by a long-lived bridge instance; the eventual adapter must detach UI nodes and callbacks before destroying it.
+This is a compiled integration boundary, not a live Geometry Dash plugin. There is no concrete Cocos2d-x backend, no scene attachment, no game entry point, no live package catalog connected to the companion app, and no real UI style rendered in Geometry Dash yet. The callbacks must be owned by a long-lived bridge instance; the eventual adapter must detach UI nodes and callbacks before destroying it.
 
 ## Adapter requirements
 
