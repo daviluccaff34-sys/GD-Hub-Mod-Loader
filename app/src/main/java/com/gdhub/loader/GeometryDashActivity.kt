@@ -15,7 +15,6 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
-import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.ScrollView
@@ -38,8 +37,6 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
     private lateinit var overlayPanel: LinearLayout
     private lateinit var output: TextView
     private lateinit var modsList: LinearLayout
-    private lateinit var dashUiPanel: LinearLayout
-    private lateinit var dashUiContent: LinearLayout
     @Volatile private var runtimeReady = false
     private val gamePackage = GameInstallProbe.GAME_PACKAGE
     private val purple = Color.rgb(116, 75, 230)
@@ -165,18 +162,6 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
             }
         }
         buildModOverlay(root)
-        dashUiPanel = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp(14), dp(12), dp(14), dp(12))
-            background = rounded(Color.rgb(12, 16, 31), 14).apply {
-                setStroke(dp(2), Color.rgb(48, 205, 245))
-            }
-            elevation = dp(18).toFloat()
-            visibility = View.GONE
-        }
-        dashUiContent = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
-        dashUiPanel.addView(dashUiContent, LinearLayout.LayoutParams(-1, -2))
-        root.addView(dashUiPanel, FrameLayout.LayoutParams(dp(300), -2, Gravity.CENTER))
         setContentView(root)
     }
 
@@ -307,11 +292,6 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
         }
         overlayPanel.addView(output)
 
-        overlayPanel.addView(Button(this).apply {
-            text = "Editor DashCode"
-            setOnClickListener { openDashCodeEditor() }
-        }, LinearLayout.LayoutParams(-1, dp(40)))
-
         val scroll = ScrollView(this)
         modsList = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         scroll.addView(modsList)
@@ -336,114 +316,6 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
         refreshModList()
     }
 
-    private fun openDashCodeEditor() {
-        val editor = EditText(this).apply {
-            setText("# Meu mod DashCode\nsay \"Olá, Geometry Dash!\"\nmake pontos = 3\nsay \"Pontos: {pontos}\"")
-            textSize = 13f
-            typeface = Typeface.MONOSPACE
-            setTextColor(Color.WHITE)
-            setHintTextColor(Color.LTGRAY)
-            setPadding(dp(12), dp(10), dp(12), dp(10))
-            minLines = 7
-            maxLines = 12
-            gravity = Gravity.TOP or Gravity.START
-            setBackgroundColor(Color.rgb(15, 15, 24))
-        }
-        val result = TextView(this).apply {
-            text = "Pronto para executar."
-            textSize = 11f
-            setTextColor(Color.LTGRAY)
-            setPadding(0, dp(8), 0, 0)
-        }
-        val content = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp(14), dp(8), dp(14), dp(4))
-            addView(editor, LinearLayout.LayoutParams(-1, dp(180)))
-            addView(result)
-        }
-        val run = Button(this).apply { text = "Executar" }
-        val stop = Button(this).apply {
-            text = "Parar execução"
-            isEnabled = false
-            setOnClickListener {
-                GdHubRuntime.nativeStopDashCode()
-                result.text = "Solicitação de parada enviada."
-                isEnabled = false
-            }
-        }
-        val actions = LinearLayout(this).apply {
-            orientation = LinearLayout.HORIZONTAL
-            addView(run, LinearLayout.LayoutParams(0, dp(44), 1f))
-            addView(stop, LinearLayout.LayoutParams(0, dp(44), 1f))
-        }
-        content.addView(actions, LinearLayout.LayoutParams(-1, dp(48)))
-        val dialog = AlertDialog.Builder(this)
-            .setTitle("GD HUB • DashCode")
-            .setView(content)
-            .setNegativeButton("Fechar", null)
-            .create()
-        run.setOnClickListener {
-            run.isEnabled = false
-            stop.isEnabled = true
-            result.text = "Executando código…"
-            val source = editor.text.toString()
-            Thread {
-                val response = runCatching { GdHubRuntime.nativeRunDashCode(source) }
-                    .getOrElse { "ERROR\nFalha no runtime: ${it.message}" }
-                runOnUiThread {
-                    result.text = response.lineSequence().filterNot { it.startsWith("@gdhub-ui|") }.joinToString("\n")
-                    output.text = result.text
-                    renderDashCodeUi(response)
-                    run.isEnabled = true
-                    stop.isEnabled = false
-                }
-            }.start()
-        }
-        dialog.show()
-    }
-    private fun renderDashCodeUi(response: String) {
-        if (!::dashUiPanel.isInitialized || !::dashUiContent.isInitialized) return
-        val commands = response.lineSequence().filter { it.startsWith("@gdhub-ui|") }.toList()
-        if (commands.isEmpty()) return
-        dashUiContent.removeAllViews()
-        var hasContent = false
-        commands.forEach { line ->
-            val parts = line.split("|", limit = 3)
-            if (parts.size < 2) return@forEach
-            val command = parts[1]
-            val value = parts.getOrElse(2) { "" }
-            when (command) {
-                "clear" -> {
-                    dashUiContent.removeAllViews()
-                    hasContent = false
-                    dashUiPanel.visibility = View.GONE
-                }
-                "title" -> {
-                    dashUiContent.addView(TextView(this).apply {
-                        text = value; textSize = 19f; setTextColor(Color.WHITE)
-                        typeface = Typeface.DEFAULT_BOLD
-                        setPadding(0, 0, 0, dp(8))
-                    })
-                    hasContent = true
-                }
-                "label" -> {
-                    dashUiContent.addView(TextView(this).apply {
-                        text = value; textSize = 14f; setTextColor(Color.LTGRAY)
-                        setPadding(0, dp(4), 0, dp(8))
-                    })
-                    hasContent = true
-                }
-                "button" -> {
-                    dashUiContent.addView(Button(this).apply {
-                        text = value
-                        setOnClickListener { output.text = "Botão pressionado: $value" }
-                    }, LinearLayout.LayoutParams(-1, dp(42)))
-                    hasContent = true
-                }
-            }
-        }
-        if (hasContent) dashUiPanel.visibility = View.VISIBLE
-    }
     private fun refreshModList() {
         if (!::modsList.isInitialized) return
         modsList.removeAllViews()
