@@ -74,6 +74,31 @@ int main() {
     ok &= check(reader.inspect(package_path, info), "GDHB package is read");
     ok &= check(info.id == "sample" && info.main_source == "say \"hello\"\n",
                 "manifest and DashCode source are extracted");
+
+    const auto write_test_package = [](const std::string& path, const std::string& manifest) {
+        std::ofstream out(path, std::ios::binary);
+        auto u16 = [&out](unsigned v) { out.put(static_cast<char>(v & 255)); out.put(static_cast<char>((v >> 8) & 255)); };
+        auto u32 = [&out](unsigned v) { for (int i=0;i<4;++i) out.put(static_cast<char>((v >> (8*i)) & 255)); };
+        auto entry = [&](const std::string& name, const std::string& data) {
+            u16(static_cast<unsigned>(name.size())); u32(static_cast<unsigned>(data.size()));
+            out.write(name.data(), static_cast<std::streamsize>(name.size()));
+            out.write(data.data(), static_cast<std::streamsize>(data.size()));
+        };
+        out.write("GDHB",4); u16(1); u16(2);
+        entry("manifest.json",manifest); entry("src/main.dash","say \\"ok\\"\\n");
+    };
+    const std::string invalid_json_path = "test_invalid_json.gdhb";
+    write_test_package(invalid_json_path, "{\\"id\\":\\"bad\\",\\"name\\":,\\"version\\":\\"1\\"}");
+    ok &= check(!reader.inspect(invalid_json_path, info), "GDHB rejects malformed manifest JSON");
+    const std::string nested_key_path = "test_nested_manifest.gdhb";
+    write_test_package(nested_key_path, "{\\"meta\\":{\\"id\\":\\"fake\\"},\\"id\\":\\"real\\",\\"name\\":\\"Name\\",\\"version\\":\\"1\\"}");
+    ok &= check(reader.inspect(nested_key_path, info) && info.id == "real",
+                "manifest fields are read only from the top-level object");
+    const std::string duplicate_key_path = "test_duplicate_manifest.gdhb";
+    write_test_package(duplicate_key_path, "{\\"id\\":\\"one\\",\\"id\\":\\"two\\",\\"name\\":\\"Name\\",\\"version\\":\\"1\\"}");
+    ok &= check(!reader.inspect(duplicate_key_path, info), "GDHB rejects duplicate JSON keys");
+    ok &= check(gdhub_runtime_run_package(nullptr, package_path.c_str(), nullptr, 0, nullptr) == -1,
+                "C API rejects null runtime handles");
     gdhub::runtime::ModRuntime runtime;
     std::vector<std::string> package_output;
     gdhub::runtime::PackageInfo runtime_info;
@@ -108,6 +133,9 @@ int main() {
         out.put('x');
     }
     ok &= check(!reader.inspect(bad_path, info), "GDHB rejects directory traversal paths");
+    std::remove(invalid_json_path.c_str());
+    std::remove(nested_key_path.c_str());
+    std::remove(duplicate_key_path.c_str());
     std::remove(bad_path.c_str());
     std::remove(package_path.c_str());
     return ok ? 0 : 1;
