@@ -1,6 +1,7 @@
 #include "runtime/language/dash_interpreter.hpp"
 #include "runtime/package/gdhb_reader.hpp"
 #include "runtime/mod_runtime.hpp"
+#include "runtime/c_api/gdhub_c_api.h"
 #include <cstdio>
 #include <fstream>
 #include <iostream>
@@ -80,6 +81,17 @@ int main() {
                 "GDHB package runs through ModRuntime");
     ok &= check(package_output.size() == 1 && package_output[0] == "hello",
                 "packaged DashCode produces expected output");
+    ok &= check(gdhub_api_version() == 1, "C API reports version 1");
+    gdhub_runtime_handle* c_runtime = gdhub_runtime_create();
+    size_t required = 0;
+    int c_status = gdhub_runtime_run_package(c_runtime, package_path, nullptr, 0, &required);
+    ok &= check(c_status == -3 && required > 1, "C API reports required output buffer size");
+    std::vector<char> c_output(required);
+    c_status = gdhub_runtime_run_package(c_runtime, package_path, c_output.data(),
+                                         c_output.size(), &required);
+    ok &= check(c_status == 0 && std::string(c_output.data()) == "hello",
+                "C API executes package and returns output");
+    gdhub_runtime_destroy(c_runtime);
     std::remove(package_path.c_str());
     return ok ? 0 : 1;
 }
