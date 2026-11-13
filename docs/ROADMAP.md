@@ -11,11 +11,12 @@
 - [x] Add Python GDHB packager
 - [x] Add native tests and GitHub Actions CI workflow
 - [x] Add Android companion manager UI and JNI bridge
+- [x] Add a Publicar Mods tab with GDHB selection, metadata form, local draft saving, and multipart upload client
 - [x] Add ARM32/ARM64 APK build workflow
 - [x] Add runtime execution limits
 - [x] Add versioned C ABI for future native hosts
 - [x] Add tests for malformed manifests, duplicate keys and C API null handles
-- [ ] Verify native CI, Android shared-library builds and APK artifact
+- [x] Verify native CI, Android shared-library builds and APK artifact (run 43379430103)
 - [ ] Run APK on a physical Android device
 - [ ] Expand DashCode grammar and error messages
 
@@ -34,3 +35,15 @@
 - Package execution is available in the companion app, not inside Geometry Dash.
 - The current project is not yet an operational in-game mod loader. No injection, hooks, or game modification are implemented.
 - Game integration cannot be completed safely by guessing private offsets or undocumented memory layouts. It requires a verified, version-specific integration point and real-device testing.
+
+## Mod catalog status
+
+- [x] Add a moderated Cloudflare Worker API for GDHB submissions, approved catalog listings, and downloads.
+- [x] Validate GDHB v1 package structure on the server before accepting a submission.
+- [ ] Enable Cloudflare R2 in the account, create the `gdhub-mods` bucket, and bind it to the Worker.
+- [ ] Deploy the catalog Worker and configure the HTTPS API URL in the Android build.
+- [ ] Test a real upload, pending-review state, approval, listing, and download.
+
+## Geometry Dash APK identity warning
+
+The APK uploaded for native inspection reports manifest version `2.2.144` (versionCode 41), not the requested `2.2081`. Its Cocos symbols and Java startup path must not be treated as verified for 2.2081. Obtain the exact target APK before writing the in-game loader adapter.
