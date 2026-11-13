@@ -82,14 +82,14 @@ bool patch_symbol(std::uint32_t* hash_table, char* str_table, ElfW(Sym)* sym_tab
 
                 log::debug("Disabling symbol at {} ({})", reinterpret_cast<void*>(sym_name), sym_name);
 
-constexpr std::array<const std::uint8_t, 3> SYMBOL_PATCH_VALUE{':', '3', '\0'};
+                if (!set_mprotect(reinterpret_cast<std::uintptr_t>(sym_name), SYMBOL_PATCH_VALUE.size(), PROT_READ | PROT_WRITE)) {
                     log::warn("failed to patch symbol: could not set writable flag");
                     return false;
                 }
 
-constexpr std::array<const std::uint8_t, 3> SYMBOL_PATCH_VALUE{':', '3', '\0'};
+                memcpy(sym_name, SYMBOL_PATCH_VALUE.data(), SYMBOL_PATCH_VALUE.size());
 
-constexpr std::array<const std::uint8_t, 3> SYMBOL_PATCH_VALUE{':', '3', '\0'};
+                if (!set_mprotect(reinterpret_cast<std::uintptr_t>(sym_name), SYMBOL_PATCH_VALUE.size(), PROT_READ)) {
                     log::warn("failed to patch symbol: could not remove writable flag");
                     return false;
                 }
