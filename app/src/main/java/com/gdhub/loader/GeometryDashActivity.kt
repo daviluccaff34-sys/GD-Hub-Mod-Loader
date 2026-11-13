@@ -317,6 +317,41 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
         refreshModList()
     }
 
+    private fun showPackageInterface(result: String) {
+        val uiLines = result.lineSequence().filter { it.startsWith("@gdhub-ui|") }.toList()
+        if (uiLines.isEmpty()) return
+
+        var title = "GD Hub"
+        val labels = mutableListOf<String>()
+        val buttons = mutableListOf<String>()
+        uiLines.forEach { line ->
+            val parts = line.split("|", limit = 3)
+            if (parts.size < 3) return@forEach
+            when (parts[1]) {
+                "title" -> title = parts[2]
+                "label" -> labels.add(parts[2])
+                "button" -> buttons.add(parts[2])
+            }
+        }
+
+        val message = buildString {
+            labels.forEach { append(it).append("\\n\\n") }
+            append("A criação de objetos reais depende da integração nativa com o editor do Geometry Dash.")
+        }
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(title)
+            .setMessage(message)
+            .setPositiveButton("Gerar blocos", null)
+            .setNegativeButton("Fechar", null)
+            .create()
+        dialog.setOnShowListener {
+            // Keep the requested control visible, but do not pretend to create
+            // level objects until a verified editor bridge is implemented.
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
+        }
+        dialog.show()
+    }
+
     private fun refreshModList() {
         if (!::modsList.isInitialized) return
         modsList.removeAllViews()
@@ -358,6 +393,7 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
                             }.getOrElse { "Falha no runtime: ${it.message}" }
                             runOnUiThread {
                                 output.text = result
+                                showPackageInterface(result)
                                 isEnabled = prefs.getBoolean(file.name, false) && runtimeReady
                             }
                         }.start()
