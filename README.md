@@ -9,15 +9,15 @@ Independent Android mod-loader research project targeting Geometry Dash **2.2081
 - Package: `.gdhb` — manifest and source files, **not compiled code**
 
 ## Implemented prototype
-- DashCode interpreter: variables, output, addition, conditions, loops and text interpolation.
+- DashCode interpreter: variables, output, addition, conditions, loops, text interpolation and UI instructions (`ui title`, `ui label`, `ui button`, `ui clear`).
 - Runtime limits for source size, instruction count and output.
 - GDHB v1 reader with size bounds, safe relative paths, duplicate detection and required-file checks.
 - ModRuntime connects the package reader to the interpreter.
 - Python packager at `packager/gdhb_pack.py`.
-- Android companion app in `app/`: imports, lists, removes and runs packages through JNI.
+- Android app in `app/`: imports, lists, removes and runs packages through JNI; hosts Geometry Dash and renders DashCode-generated UI in a touchable layer above the game.
 - GitHub Actions configured for native tests, ARM32/ARM64 shared-library builds and an APK artifact.
 
-**Important:** the companion app is not an in-game overlay. The project does not yet connect to Geometry Dash's process or expose real game actions. The in-game integration is a separate milestone and must use a verified, version-specific integration boundary.
+**Integration boundary:** DashCode-generated labels, titles and buttons are rendered in a touchable Android view layer above the hosted game. This is not a Cocos scene node and does not create editor objects. Real Geometry Dash actions (blocks, portals, triggers and editor changes) still require a verified, version-specific game adapter and device testing. The Cocos symbol probe is diagnostic only; it does not call unverified game functions.
 
 ## Build native tests
 
