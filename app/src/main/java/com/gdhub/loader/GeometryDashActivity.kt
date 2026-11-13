@@ -20,6 +20,7 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import android.util.Log
+import com.customRobTop.BaseRobTopActivity
 import com.customRobTop.JniToCpp
 import org.cocos2dx.lib.Cocos2dxGLSurfaceView
 import org.cocos2dx.lib.Cocos2dxHelper
@@ -85,6 +86,8 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
             runCatching {
                 JniToCpp.setupHSSAssets(info.applicationInfo!!.sourceDir, Environment.getExternalStorageDirectory().absolutePath)
             }.onFailure { Log.w("GDHub", "HSS asset setup was not available", it) }
+            BaseRobTopActivity.setCurrentActivity(this)
+            BaseRobTopActivity.isPaused = false
             setBootStage("Criando superfície OpenGL")
             createGameSurface()
         } catch (error: Throwable) {
@@ -339,6 +342,7 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
 
     override fun onResume() {
         super.onResume()
+        BaseRobTopActivity.isPaused = false
         if (::gameView.isInitialized) {
             gameView.onResume()
             gameView.queueEvent { renderer.handleOnResume() }
@@ -347,6 +351,7 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
     }
 
     override fun onPause() {
+        BaseRobTopActivity.isPaused = true
         if (::gameView.isInitialized) {
             gameView.queueEvent { renderer.handleOnPause() }
             Cocos2dxHelper.onPause()
@@ -363,6 +368,7 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
     override fun onDestroy() {
         getSharedPreferences("gdhub_boot_diagnostics", MODE_PRIVATE).edit().putString("stage", "Activity encerrada normalmente").commit()
         runCatching { FMOD.close() }
+        BaseRobTopActivity.clearCurrentActivity(this)
         Cocos2dxHostContext.current = null
         if (activeActivity === this) activeActivity = null
         super.onDestroy()
