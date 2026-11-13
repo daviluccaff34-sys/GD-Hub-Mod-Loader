@@ -6,6 +6,7 @@
 - [x] Define Android ABI targets
 - [x] Define GDHB v1 container format
 - [x] Implement bounded GDHB reader and basic manifest extraction
+- [x] Connect package reader to interpreter with ModRuntime
 - [x] Implement first DashCode interpreter instructions
 - [x] Add Python GDHB packager
 - [x] Add native tests and GitHub Actions CI workflow
