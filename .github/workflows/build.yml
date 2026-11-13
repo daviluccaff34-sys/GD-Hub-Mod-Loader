@@ -17,6 +17,11 @@ jobs:
         run: python -m py_compile packager/gdhb_pack.py
       - name: Package example mod
         run: python packager/gdhb_pack.py --manifest examples/hello_dash/manifest.json --source examples/hello_dash/main.dash --output /tmp/hello-dash.gdhb
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GD-Hub-Hello-Dash-Package
+          path: /tmp/hello-dash.gdhb
+          if-no-files-found: error
       - name: Configure
         run: cmake -S . -B build -DBUILD_TESTING=ON
       - name: Build
