@@ -38,6 +38,8 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
     private lateinit var overlayPanel: LinearLayout
     private lateinit var output: TextView
     private lateinit var modsList: LinearLayout
+    private lateinit var dashUiPanel: LinearLayout
+    private lateinit var dashUiContent: LinearLayout
     @Volatile private var runtimeReady = false
     private val gamePackage = GameInstallProbe.GAME_PACKAGE
     private val purple = Color.rgb(116, 75, 230)
@@ -154,6 +156,18 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
         gameView.setCocos2dxRenderer(renderer)
         root.addView(gameView, FrameLayout.LayoutParams(-1, -1))
         buildModOverlay(root)
+        dashUiPanel = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(14), dp(12), dp(14), dp(12))
+            background = rounded(Color.rgb(12, 16, 31), 14).apply {
+                setStroke(dp(2), Color.rgb(48, 205, 245))
+            }
+            elevation = dp(18).toFloat()
+            visibility = View.GONE
+        }
+        dashUiContent = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        dashUiPanel.addView(dashUiContent, LinearLayout.LayoutParams(-1, -2))
+        root.addView(dashUiPanel, FrameLayout.LayoutParams(dp(300), -2, Gravity.CENTER))
         setContentView(root)
     }
 
@@ -368,14 +382,58 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
                 val response = runCatching { GdHubRuntime.nativeRunDashCode(source) }
                     .getOrElse { "ERROR\nFalha no runtime: ${it.message}" }
                 runOnUiThread {
-                    result.text = response
+                    result.text = response.lineSequence().filterNot { it.startsWith("@gdhub-ui|") }.joinToString("\n")
+                    output.text = result.text
+                    renderDashCodeUi(response)
                     run.isEnabled = true
                     stop.isEnabled = false
-                    output.text = response
                 }
             }.start()
         }
         dialog.show()
+    }
+    private fun renderDashCodeUi(response: String) {
+        if (!::dashUiPanel.isInitialized || !::dashUiContent.isInitialized) return
+        val commands = response.lineSequence().filter { it.startsWith("@gdhub-ui|") }.toList()
+        if (commands.isEmpty()) return
+        dashUiContent.removeAllViews()
+        var hasContent = false
+        commands.forEach { line ->
+            val parts = line.split("|", limit = 3)
+            if (parts.size < 2) return@forEach
+            val command = parts[1]
+            val value = parts.getOrElse(2) { "" }
+            when (command) {
+                "clear" -> {
+                    dashUiContent.removeAllViews()
+                    hasContent = false
+                    dashUiPanel.visibility = View.GONE
+                }
+                "title" -> {
+                    dashUiContent.addView(TextView(this).apply {
+                        text = value; textSize = 19f; setTextColor(Color.WHITE)
+                        typeface = Typeface.DEFAULT_BOLD
+                        setPadding(0, 0, 0, dp(8))
+                    })
+                    hasContent = true
+                }
+                "label" -> {
+                    dashUiContent.addView(TextView(this).apply {
+                        text = value; textSize = 14f; setTextColor(Color.LTGRAY)
+                        setPadding(0, dp(4), 0, dp(8))
+                    })
+                    hasContent = true
+                }
+                "button" -> {
+                    dashUiContent.addView(Button(this).apply {
+                        text = value
+                        setOnClickListener { output.text = "Botão pressionado: $value" }
+                    }, LinearLayout.LayoutParams(-1, dp(42)))
+                    hasContent = true
+                }
+            }
+        }
+        if (hasContent) dashUiPanel.visibility = View.VISIBLE
     }
     private fun refreshModList() {
         if (!::modsList.isInitialized) return
