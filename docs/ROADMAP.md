@@ -1,19 +1,26 @@
 # Roadmap
 
-## 0.1.0-alpha — scaffold
+## 0.1.0-alpha — core prototype
 - [x] Create repository layout
-- [x] Add C++ project entry points
-- [x] Define initial Android ABI targets
-- [x] Document the proposed `.gdhb` package model
-- [ ] Add reproducible Android build configuration
-- [ ] Add package archive reader and manifest validation
-- [ ] Design the GD Hub language grammar
-- [ ] Implement the first interpreter instructions
-- [ ] Add automated tests
+- [x] Add C++17 project and CMake configuration
+- [x] Define Android ABI targets
+- [x] Define GDHB v1 container format
+- [x] Implement bounded GDHB reader and basic manifest extraction
+- [x] Implement first DashCode interpreter instructions
+- [x] Add Python GDHB packager
+- [x] Add native tests and GitHub Actions CI workflow
+- [ ] Run CI and fix any failures
+- [ ] Complete JSON manifest validation and package permissions
+- [ ] Expand DashCode grammar and error messages
 
-## Later milestones
-- Establish a documented, version-specific integration boundary for Geometry Dash 2.2081.
-- Build and test ARM32 and ARM64 artifacts.
-- Add a mod manager UI and controlled runtime permissions.
+## 0.2.0 — Android runtime
+- [ ] Build reproducible ARM32 and ARM64 Android artifacts with the NDK
+- [ ] Add safe bridge between the in-game component and the runtime
+- [ ] Define a version-specific integration boundary for Geometry Dash 2.2081
+- [ ] Add runtime API for supported game actions
+- [ ] Add mod manager interface
 
-The scaffold is not yet an operational in-game mod loader.
+## Important boundaries
+- A .gdhb is a package containing source code, not a compiled mod.
+- The current reader returns src/main.dash as text; it does not install or execute a package automatically.
+- The current project is not yet an operational in-game mod loader. No injection, hooks, or game modification are implemented.
