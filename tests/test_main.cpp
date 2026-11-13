@@ -1,5 +1,6 @@
 #include "runtime/language/dash_interpreter.hpp"
 #include "runtime/package/gdhb_reader.hpp"
+#include "runtime/mod_runtime.hpp"
 #include <cstdio>
 #include <fstream>
 #include <iostream>
@@ -62,6 +63,13 @@ int main() {
     ok &= check(reader.inspect(package_path, info), "GDHB package is read");
     ok &= check(info.id == "sample" && info.main_source == "say \"hello\"\n",
                 "manifest and DashCode source are extracted");
+    gdhub::runtime::ModRuntime runtime;
+    std::vector<std::string> package_output;
+    gdhub::runtime::PackageInfo runtime_info;
+    ok &= check(runtime.run_package(package_path, runtime_info, package_output),
+                "GDHB package runs through ModRuntime");
+    ok &= check(package_output.size() == 1 && package_output[0] == "hello",
+                "packaged DashCode produces expected output");
     std::remove(package_path.c_str());
     return ok ? 0 : 1;
 }
