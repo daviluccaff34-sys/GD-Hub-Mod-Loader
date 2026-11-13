@@ -265,17 +265,26 @@ public class MainActivity extends Activity {
     }
 
     private void launchGeometryDash(){
-        final String clonePackage="com.gdhub.geometryjump";
-        try{
-            Intent launch=getPackageManager().getLaunchIntentForPackage(clonePackage);
-            if(launch==null){
-                status.setText("Clone GD Hub não instalado. Primeiro gere e instale o APK Geometry Dash (GD Hub). O jogo original permanece separado.");
-                return;
-            }
-            launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            status.setText("Abrindo Geometry Dash (GD Hub)…");
-            startActivity(launch);
-        }catch(Exception e){status.setText("Não foi possível iniciar o clone GD Hub: "+e.getMessage());}
+        GameInstallProbe.Result game=GameInstallProbe.inspect(this);
+        if(!game.installed){
+            status.setText("Geometry Dash não encontrado. Instale o jogo oficial primeiro.");
+            new android.app.AlertDialog.Builder(this)
+                .setTitle("Geometry Dash não encontrado")
+                .setMessage("O GD Hub procura o pacote "+GameInstallProbe.GAME_PACKAGE+".")
+                .setPositiveButton("OK",null).show();
+            return;
+        }
+        StringBuilder details=new StringBuilder();
+        details.append("Versão: ").append(game.versionName).append(" (").append(game.versionCode).append(")\n");
+        details.append("ABIs do aparelho: ").append(android.text.TextUtils.join(", ",game.supportedAbis)).append("\n");
+        details.append("Bibliotecas nativas: ").append(GameInstallProbe.hasNativeLibraryDirectory(game)?"diretório encontrado":"diretório não encontrado").append("\n");
+        details.append("APK base: ").append(game.sourceApk).append("\n\n");
+        details.append("O jogo foi detectado. A Activity interna e a ponte Cocos2d-x ainda precisam ser integradas; esta versão não tenta abrir outro pacote nem finge que a injeção já funciona.");
+        status.setText("Geometry Dash detectado • integração interna em preparação");
+        new android.app.AlertDialog.Builder(this)
+            .setTitle("Geometry Dash detectado")
+            .setMessage(details.toString())
+            .setPositiveButton("OK",null).show();
     }
 
     private void runPackage(File file){try{status.setText(nativeRunPackage(file.getAbsolutePath()));}catch(Throwable e){status.setText("Erro no runtime nativo: "+e.getMessage());}}
