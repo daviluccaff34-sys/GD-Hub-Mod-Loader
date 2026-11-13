@@ -280,12 +280,15 @@ public class MainActivity extends Activity {
         details.append("ABIs do aparelho: ").append(android.text.TextUtils.join(", ",game.supportedAbis)).append("\n");
         details.append("Bibliotecas nativas: ").append(GameInstallProbe.hasNativeLibraryDirectory(game)?"diretório encontrado":"diretório não encontrado").append("\n");
         details.append("APK base: ").append(game.sourceApk).append("\n\n");
-        details.append("O jogo foi detectado. A Activity interna e a ponte Cocos2d-x ainda precisam ser integradas; esta versão não tenta abrir outro pacote nem finge que a injeção já funciona.");
-        status.setText("Geometry Dash detectado • integração interna em preparação");
-        new android.app.AlertDialog.Builder(this)
-            .setTitle("Geometry Dash detectado")
-            .setMessage(details.toString())
-            .setPositiveButton("OK",null).show();
+        status.setText("Iniciando Geometry Dash dentro do GD Hub…");
+        try {
+            startActivity(new android.content.Intent(this, GeometryDashActivity.class));
+        } catch (Throwable error) {
+            status.setText("Falha ao iniciar o jogo: " + error.getMessage());
+            new android.app.AlertDialog.Builder(this).setTitle("Falha ao iniciar")
+                .setMessage(details.toString() + "\\n\\n" + error.getMessage())
+                .setPositiveButton("OK", null).show();
+        }
     }
 
     private void runPackage(File file){try{status.setText(nativeRunPackage(file.getAbsolutePath()));}catch(Throwable e){status.setText("Erro no runtime nativo: "+e.getMessage());}}
