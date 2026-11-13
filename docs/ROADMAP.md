@@ -24,17 +24,21 @@
 - [x] Build reproducible ARM32 and ARM64 Android shared libraries with the NDK (workflow run 43384744508)
 - [x] Build and upload the companion APK artifact in CI (workflow run 43384744508)\n- [ ] Install and validate the companion APK on a physical device
 - [x] Document the version-specific integration boundary and staged plan for Geometry Dash 2.2081
-- [ ] Port the complete in-process Cocos2d-x Android host (Activity, Java bridge, FMOD bridge, asset redirection and lifecycle) from a license-compatible upstream baseline\n- [ ] Add a safe bridge between a verified in-game component and the runtime
+- [x] Add the in-process GeometryDashActivity and Cocos2d-x OpenGL host (implemented; physical-device test pending)
+- [x] Add Cocos JNI bridge, FMOD bridge, APK/split asset resolution and native library loading order
+- [x] Add Geode-derived save-path redirection and version-code compatibility patcher
+- [x] Add pause/resume, back-key, touch forwarding and a GD Hub overlay above the game
+- [x] Load the GD Hub native runtime after Cocos native initialization and expose package execution to the overlay\n- [x] Add a first runtime bridge from the in-game overlay to the DashCode package interpreter (scene/game API still pending)
 - [ ] Define package permissions and enforce them in the runtime
 - [ ] Add runtime API for supported game actions
-- [ ] Add in-game mod manager interface through a documented integration boundary
+- [x] Add an Android overlay mod panel above the game surface (not yet a Cocos scene node)
 
 ## Important boundaries
 - A .gdhb is a package containing source code, not a compiled mod.
 - The reader validates the package and returns src/main.dash as text; ModRuntime passes it to the DashCode interpreter.
-- Package execution is available in the companion app, not inside Geometry Dash.
-- The current project is not yet an operational in-game mod loader. No injection, hooks, or game modification are implemented.
-- Game integration cannot be completed safely by guessing private offsets or undocumented memory layouts. It requires a verified, version-specific integration point and real-device testing.
+- The in-game overlay can invoke the DashCode interpreter while Geometry Dash is hosted in GD Hub.
+- The in-process host and runtime bridge are implemented in source but are not yet verified on a physical device. The current DashCode runtime does not yet expose Cocos scene changes, gameplay hooks, triggers, or editor-object APIs.
+- Full game modification still requires a verified, version-specific Cocos integration and real-device testing; no private offsets or guessed memory layouts are used.
 
 ## Mod catalog status
 
