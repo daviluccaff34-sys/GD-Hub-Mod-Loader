@@ -1,14 +1,24 @@
 # Third-party notices
 
-## Geode Android Launcher reference
+## Geode Android Launcher
 
 Repository: https://github.com/geode-sdk/android-launcher
-Reference revision inspected: `9e136f728d35bdd60b8e66f382e0d1e405376854`
-License: **Boost Software License 1.0** (often abbreviated BSL-1.0)
-License text: https://github.com/geode-sdk/android-launcher/blob/9e136f728d35bdd60b8e66f382e0d1e405376854/LICENSE.txt
+Source revision used for the Android bridge files: `9e136f728d35bdd60b8e66f382e0d1e405376854`
+License: Boost Software License 1.0 (BSL-1.0)
+License text is included at [third_party/geode/LICENSE.txt](third_party/geode/LICENSE.txt).
 
-GD Hub uses this project's Android in-process launcher architecture as a technical reference. This commit does not copy Geode source files. GD Hub's host Activity and runtime bridge are to be implemented as GD Hub-owned code while preserving the JNI interfaces required by Geometry Dash. If source code is incorporated in a future change, its original copyright notices and the complete Boost Software License 1.0 text must accompany it.
+The following source files were adapted from the Geode Android Launcher:
+- `Cocos2dxRenderer.kt`
+- `Cocos2dxAccelerometer.kt`
+- `Cocos2dxBitmap.kt`
+- `Cocos2dxTypefaces.kt`
+- `FMOD.kt`
+- `AudioDevice.kt`
+- `MediaCodec.kt`
+- `JniToCpp.kt`
 
-## Version mapping reference
+The GD Hub host Activity, Cocos2d-x surface view, helper, runtime bridge and UI overlay are GD Hub-specific implementations. Adapted files retain their upstream package names where required by Geometry Dash JNI compatibility. The upstream project license and notices are preserved here.
 
-The Geode Android launcher's `GamePackageUtils` maps Android package `versionCode 41` to Geometry Dash `2.2081`. The APK's Android `versionName` may differ (for example, `2.2.144`); GD Hub uses `versionCode` to identify the unified game version.
+## Cocos2d-x accelerometer source notice
+
+`Cocos2dxAccelerometer.kt` also retains the upstream cocos2d-x MIT notice in its source header.
