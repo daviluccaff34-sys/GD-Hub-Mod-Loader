@@ -1,0 +1,6 @@
+# Código de autoria em DashPT
+crie variavel jogador = "Cube"
+crie variavel pontos = 0
+some 10 em pontos
+fale "Olá, {jogador}! Seu mod DashPT foi carregado."
+fale "Pontos de exemplo: {pontos}"
