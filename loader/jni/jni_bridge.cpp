@@ -93,7 +93,7 @@ extern "C" JNIEXPORT jstring JNICALL
 Java_com_gdhub_loader_GdHubRuntime_nativeOnGameReady(JNIEnv* env, jclass) {
     const auto symbols = gdhub::game::inspect_loaded_cocos_runtime();
     const char* state = symbols.has_required_symbols()
-        ? "Cocos2d-x carregado; símbolos principais encontrados."
-        : "Cocos2d-x foi carregado, mas alguns símbolos esperados não foram encontrados.";
+        ? "READY|Runtime DashCode pronto; símbolos Cocos principais detectados."
+        : "LIMITED|Runtime DashCode pronto; integração nativa Cocos ainda não validada.";
     return env->NewStringUTF(state);
 }
