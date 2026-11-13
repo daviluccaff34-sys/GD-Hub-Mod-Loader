@@ -11,17 +11,17 @@ GDHB é um contêiner binário próprio, simples e sem compressão. Ele guarda a
 | Entry count | uint16 | 1–128 |
 | Entry path length | uint16 | 1–240 bytes |
 | Entry data length | uint32 | 0–4 MiB |
-| Path | variável | UTF-8, relativo, sem `..` |
+| Path | variável | UTF-8 válido, relativo, sem `..` |
 | Data | variável | bytes do arquivo |
 
-Cada entrada repete os campos de tamanho, caminho e dados. O tamanho total do pacote não pode passar de 16 MiB. Caminhos duplicados, absolutos, com barras invertidas ou segmentos `..` são rejeitados.
+Cada entrada repete os campos de tamanho, caminho e dados. O tamanho total do pacote não pode passar de 16 MiB. Caminhos duplicados, absolutos, com barras invertidas, segmentos vazios ou segmentos `.`/ `..` são rejeitados.
 
 ## Arquivos obrigatórios
 
-- `manifest.json`: objeto JSON com `id`, `name` e `version` (textos).
-- `src/main.dash`: código-fonte principal.
+- `manifest.json`: objeto JSON válido com `id`, `name` e `version` como textos não vazios no nível principal.
+- `src/main.dash`: código-fonte principal não vazio em UTF-8 válido.
 
-O leitor também rejeita arquivos truncados, dados extras, excesso de entradas e arquivos grandes. O manifesto ainda usa extração limitada de campos; validação JSON completa e permissões por pacote ficam para uma versão futura.
+O leitor valida a estrutura completa do JSON, rejeita chaves duplicadas em cada objeto e não confunde propriedades aninhadas com os campos principais do manifesto. Strings JSON com escapes são aceitas. O leitor ainda não aplica permissões por pacote; permissões continuam sendo uma etapa futura.
 
 ## Empacotar
 
