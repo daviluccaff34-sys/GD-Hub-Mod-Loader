@@ -3,9 +3,9 @@
   "name": "Hello Dash",
   "version": "1.0.0",
   "author": "GD Hub Example",
-  "runtime": "dashflow",
-  "runtime_version": "0.1",
+  "runtime": "dashcode",
+  "runtime_version": "0.1.0",
   "game_versions": ["2.2081"],
-  "entry": "main.dash",
-  "permissions": ["ui.toast", "game.level.read"]
+  "entry": "src/main.dash",
+  "permissions": []
 }
