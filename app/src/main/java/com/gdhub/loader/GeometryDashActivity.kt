@@ -284,6 +284,11 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
         }
         overlayPanel.addView(output)
 
+        overlayPanel.addView(Button(this).apply {
+            text = "Editor DashCode"
+            setOnClickListener { openDashCodeEditor() }
+        }, LinearLayout.LayoutParams(-1, dp(40)))
+
         val scroll = ScrollView(this)
         modsList = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         scroll.addView(modsList)
@@ -308,6 +313,70 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
         refreshModList()
     }
 
+    private fun openDashCodeEditor() {
+        val editor = EditText(this).apply {
+            setText("# Meu mod DashCode\nsay \"Olá, Geometry Dash!\"\nmake pontos = 3\nsay \"Pontos: {pontos}\"")
+            textSize = 13f
+            typeface = Typeface.MONOSPACE
+            setTextColor(Color.WHITE)
+            setHintTextColor(Color.LTGRAY)
+            setPadding(dp(12), dp(10), dp(12), dp(10))
+            minLines = 7
+            maxLines = 12
+            gravity = Gravity.TOP or Gravity.START
+            setBackgroundColor(Color.rgb(15, 15, 24))
+        }
+        val result = TextView(this).apply {
+            text = "Pronto para executar."
+            textSize = 11f
+            setTextColor(Color.LTGRAY)
+            setPadding(0, dp(8), 0, 0)
+        }
+        val content = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(14), dp(8), dp(14), dp(4))
+            addView(editor, LinearLayout.LayoutParams(-1, dp(180)))
+            addView(result)
+        }
+        val run = Button(this).apply { text = "Executar" }
+        val stop = Button(this).apply {
+            text = "Parar execução"
+            isEnabled = false
+            setOnClickListener {
+                GdHubRuntime.nativeStopDashCode()
+                result.text = "Solicitação de parada enviada."
+                isEnabled = false
+            }
+        }
+        val actions = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            addView(run, LinearLayout.LayoutParams(0, dp(44), 1f))
+            addView(stop, LinearLayout.LayoutParams(0, dp(44), 1f))
+        }
+        content.addView(actions, LinearLayout.LayoutParams(-1, dp(48)))
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("GD HUB • DashCode")
+            .setView(content)
+            .setNegativeButton("Fechar", null)
+            .create()
+        run.setOnClickListener {
+            run.isEnabled = false
+            stop.isEnabled = true
+            result.text = "Executando código…"
+            val source = editor.text.toString()
+            Thread {
+                val response = runCatching { GdHubRuntime.nativeRunDashCode(source) }
+                    .getOrElse { "ERROR\nFalha no runtime: ${it.message}" }
+                runOnUiThread {
+                    result.text = response
+                    run.isEnabled = true
+                    stop.isEnabled = false
+                    output.text = response
+                }
+            }.start()
+        }
+        dialog.show()
+    }
     private fun refreshModList() {
         if (!::modsList.isInitialized) return
         modsList.removeAllViews()
