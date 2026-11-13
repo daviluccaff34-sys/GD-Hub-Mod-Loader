@@ -26,3 +26,34 @@ O arquivo `index.html` contém a interface e o empacotador. A geração ocorre l
 ## Limitação importante
 
 O Studio **empacota** fontes e recursos; não compila código nativo nem cria APK. O modelo More Icons é um starter package. A funcionalidade de combinar ícones visualmente ainda exige implementação do sistema de ícones no runtime Android do GD Hub.
+
+
+## GD Hub Mod Creator
+
+Abra `mod-creator.html` para usar o **GD Hub Mod Creator**:
+
+- Linguagem DashPT em português, compilada para comandos que o interpretador DashCode atual já reconhece.
+- Validação de blocos e comandos.
+- Construtor de rascunho de objetos Geometry Dash.
+- UI Builder para montar a estrutura de painéis, textos, botões, imagens, alternadores e barras.
+- Empacotamento em GDHB v1, com `manifest.json` e `src/main.dash` obrigatórios.
+
+### Limite de integração atual
+
+O pacote gerado é reconhecido pelo leitor GDHB e o script principal usa a linguagem suportada pelo runtime atual. Os arquivos `level/objects.json` e `ui/layout.json` são salvos como dados extras do projeto; o runtime atual não os desenha no Geometry Dash. Para isso, ainda é necessário implementar e testar o adaptador nativo Cocos2d-x para criar objetos e componentes de UI no processo do jogo. O Creator não afirma que esses recursos já funcionam dentro da gameplay.
+
+## Cloudflare: publicar o Studio
+
+1. Entre no painel Cloudflare.
+2. Abra **Workers & Pages** → **Create application** → **Pages** → **Connect to Git**.
+3. Autorize o GitHub e escolha `daviluccaff34-sys/GD-Hub-Mod-Loader`.
+4. Configure **Root directory** como `studio`.
+5. Escolha **None** em Framework preset.
+6. Deixe **Build command** vazio e coloque `.` em **Build output directory**.
+7. Clique em **Save and Deploy**.
+
+Quando o deploy terminar, o endereço `*.pages.dev` exibido pelo Cloudflare será o endereço público. O criador ficará em `https://SEU-PROJETO.pages.dev/mod-creator.html`.
+
+### O que precisa conectar (e o que não precisa)
+
+O Mod Creator gera os pacotes no próprio navegador, então não precisa de API, token ou Worker para compilar. O Worker `cloudflare/mod-catalog-worker.js` é um serviço separado, usado para publicar mods no catálogo público e moderar envios. Não coloque o segredo `ADMIN_TOKEN` no HTML, no aplicativo Android ou no GitHub. Siga `cloudflare/README.md` para configurar o catálogo.
