@@ -32,4 +32,4 @@ Never put this value in GitHub, source files, a public issue, or the Android APK
 - With the secret configured, approve the package. Confirm it appears in the public list and downloads with a valid GDHB header.
 - Remove the test package from KV after verification.
 
-The Cloudflare API confirmed the Studio deployment and workers.dev settings. Direct HTTP requests to workers.dev are blocked in the current tool environment, so browser-level smoke tests are not claimed as complete.
+The Cloudflare API confirmed both Worker deployments and workers.dev settings. The catalog now exposes `GET /health` (returns KV binding status and a boolean indicating whether ADMIN_TOKEN is configured); the Studio catalog page has a **Testar Worker** button. Direct HTTP requests to workers.dev are blocked in the current tool environment, so browser-level smoke tests are not claimed as complete.
