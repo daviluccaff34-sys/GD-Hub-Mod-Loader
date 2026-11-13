@@ -302,6 +302,30 @@ public class MainActivity extends Activity {
         super.onResume();
         if(launchButton!=null) launchButton.setEnabled(true);
         if(list!=null) scanPackages();
+        showPreviousCrashDiagnostic();
+    }
+
+    private void showPreviousCrashDiagnostic(){
+        if(android.os.Build.VERSION.SDK_INT<30 || status==null) return;
+        try{
+            android.app.ActivityManager manager=(android.app.ActivityManager)getSystemService(ACTIVITY_SERVICE);
+            java.util.List<android.app.ApplicationExitInfo> exits=manager.getHistoricalProcessExitReasons(getPackageName(),0,5);
+            if(exits==null||exits.isEmpty()) return;
+            android.app.ApplicationExitInfo exit=exits.get(0);
+            int reason=exit.getReason();
+            if(reason!=android.app.ApplicationExitInfo.REASON_CRASH_NATIVE &&
+               reason!=android.app.ApplicationExitInfo.REASON_CRASH &&
+               reason!=android.app.ApplicationExitInfo.REASON_ANR) return;
+            SharedPreferences diag=getSharedPreferences("gdhub_boot_diagnostics",MODE_PRIVATE);
+            long stageTime=diag.getLong("time",0L);
+            if(exit.getTimestamp()<stageTime) return;
+            String stage=diag.getString("stage","etapa desconhecida");
+            String detail=exit.getDescription();
+            String report="Falha anterior detectada. Etapa: "+stage+
+                "\\nMotivo Android: "+reason+
+                "\\nDetalhe: "+(detail==null||detail.isEmpty()?"não informado":detail);
+            status.setText(report);
+        }catch(Throwable ignored){}
     }
 
     private void runPackage(File file){try{status.setText(GdHubRuntime.nativeRunPackage(file.getAbsolutePath()));}catch(Throwable e){status.setText("Erro no runtime nativo: "+e.getMessage());}}
