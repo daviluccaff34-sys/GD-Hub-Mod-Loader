@@ -13,6 +13,7 @@ add_library(gdhub_loader SHARED
 target_include_directories(gdhub_loader PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 if(ANDROID)
     target_compile_definitions(gdhub_loader PRIVATE GDHUB_ANDROID=1)
+    target_sources(gdhub_loader PRIVATE loader/jni/jni_bridge.cpp)
 endif()
 
 include(CTest)
