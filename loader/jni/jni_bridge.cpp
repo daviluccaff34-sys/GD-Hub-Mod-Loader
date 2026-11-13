@@ -1,5 +1,6 @@
 #include <jni.h>
 #include "runtime/mod_runtime.hpp"
+#include "loader/game/cocos_runtime_symbols.hpp"
 #include <string>
 #include <vector>
 
@@ -54,4 +55,14 @@ Java_com_gdhub_loader_GdHubRuntime_nativeRunPackage(JNIEnv* env, jclass,
     std::string result = "OK\\n" + info.name + " (" + info.id + ") v" + info.version;
     for (const auto& line : output) result += "\\n" + line;
     return env->NewStringUTF(result.c_str());
+}
+
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_gdhub_loader_GdHubRuntime_nativeOnGameReady(JNIEnv* env, jclass) {
+    const auto symbols = gdhub::game::inspect_loaded_cocos_runtime();
+    const char* state = symbols.has_required_symbols()
+        ? "Cocos2d-x carregado; símbolos principais encontrados."
+        : "Cocos2d-x foi carregado, mas alguns símbolos esperados não foram encontrados.";
+    return env->NewStringUTF(state);
 }
