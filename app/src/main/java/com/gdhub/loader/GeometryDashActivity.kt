@@ -336,22 +336,49 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
 
         val generateLabel = buttons.firstOrNull { it.contains("Gerar", ignoreCase = true) } ?: "Gerar blocos"
         val closeLabel = buttons.firstOrNull { it.contains("Fechar", ignoreCase = true) } ?: "Fechar"
-        val message = buildString {
-            labels.forEach { append(it).append("\n\n") }
-            append("A criação de objetos reais depende da integração nativa com o editor do Geometry Dash.")
+
+        val content = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(20), dp(12), dp(20), dp(8))
         }
-        val dialog = AlertDialog.Builder(this)
+        labels.forEach { label ->
+            content.addView(TextView(this).apply {
+                text = label
+                textSize = 14f
+                setTextColor(Color.WHITE)
+                setPadding(0, dp(4), 0, dp(8))
+            })
+        }
+        content.addView(TextView(this).apply {
+            text = "A criação de objetos reais depende da integração nativa com o editor do Geometry Dash."
+            textSize = 12f
+            setTextColor(Color.LTGRAY)
+            setPadding(0, dp(8), 0, dp(12))
+        })
+
+        val actions = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = android.view.Gravity.END
+        }
+        val closeButton = Button(this).apply {
+            text = closeLabel
+            setOnClickListener { packageDialog?.dismiss() }
+        }
+        val generateButton = Button(this).apply {
+            text = generateLabel
+            isEnabled = false
+            contentDescription = "Geração real de blocos ainda não disponível"
+        }
+        actions.addView(generateButton)
+        actions.addView(closeButton)
+        content.addView(actions)
+
+        packageDialog?.dismiss()
+        packageDialog = AlertDialog.Builder(this)
             .setTitle(title)
-            .setMessage(message)
-            .setPositiveButton(generateLabel, null)
-            .setNegativeButton(closeLabel, null)
+            .setView(content)
             .create()
-        dialog.setOnShowListener {
-            // Keep the requested control visible, but do not pretend to create
-            // level objects until a verified editor bridge is implemented.
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
-        }
-        dialog.show()
+        packageDialog?.show()
     }
 
     private fun refreshModList() {
