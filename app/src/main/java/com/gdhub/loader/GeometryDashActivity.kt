@@ -39,6 +39,7 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
     private lateinit var output: TextView
     private lateinit var modsList: LinearLayout
     @Volatile private var runtimeReady = false
+    private val executedMods = mutableSetOf<String>()
     private val gamePackage = GameInstallProbe.GAME_PACKAGE
     private val purple = Color.rgb(116, 75, 230)
     private val panelColor = Color.rgb(25, 24, 38)
@@ -385,67 +386,44 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
         if (!::modsList.isInitialized) return
         modsList.removeAllViews()
         val modsDir = File(filesDir, "mods")
-        val packages = modsDir.listFiles { file ->
-            file.isFile && file.extension.equals("gdhb", true)
-        }?.sortedBy { it.name } ?: emptyList()
-
+        val packages = modsDir.listFiles { file -> file.isFile && file.extension.equals("gdhb", true) }?.sortedBy { it.name } ?: emptyList()
         if (packages.isEmpty()) {
-            modsList.addView(TextView(this).apply {
-                text = "Nenhum pacote .gdhb instalado. Volte ao gerenciador para importar mods."
-                textSize = 11f
-                setTextColor(Color.LTGRAY)
-                setPadding(0, dp(12), 0, dp(12))
-            })
+            modsList.addView(TextView(this).apply { text = "Nenhum pacote .gdhb instalado. Volte ao gerenciador para importar mods."; textSize = 11f; setTextColor(Color.LTGRAY); setPadding(0, dp(12), 0, dp(12)) })
             return
         }
-
         val prefs = getSharedPreferences("gdhub_mod_states", MODE_PRIVATE)
         packages.forEach { file ->
-            val card = LinearLayout(this).apply {
-                orientation = LinearLayout.VERTICAL
-                setPadding(dp(9), dp(8), dp(9), dp(8))
-                background = rounded(Color.rgb(39, 37, 56), 10)
-            }
-            val runButton = Button(this).apply {
-                text = "Executar pacote"
-                isEnabled = prefs.getBoolean(file.name, false) && runtimeReady
-                alpha = if (isEnabled) 1f else 0.45f
-                setOnClickListener {
-                    if (!prefs.getBoolean(file.name, false)) {
-                        output.text = "Ative este pacote antes de executar."
-                    } else {
-                        isEnabled = false
-                        output.text = "Executando ${file.name}…"
-                        Thread {
-                            val result = runCatching {
-                                GdHubRuntime.nativeRunPackage(file.absolutePath)
-                            }.getOrElse { "Falha no runtime: ${it.message}" }
-                            runOnUiThread {
-                                output.text = result
-                                showPackageInterface(result)
-                                isEnabled = prefs.getBoolean(file.name, false) && runtimeReady
-                            }
-                        }.start()
-                    }
-                }
-            }
+            val card = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(9), dp(8), dp(9), dp(8)); background = rounded(Color.rgb(39, 37, 56), 10) }
             val enabled = android.widget.Switch(this).apply {
-                text = file.name
-                textSize = 11f
-                setTextColor(Color.WHITE)
-                isChecked = prefs.getBoolean(file.name, false)
+                text = file.name; textSize = 11f; setTextColor(Color.WHITE); isChecked = prefs.getBoolean(file.name, true)
                 setOnCheckedChangeListener { _, checked ->
                     prefs.edit().putBoolean(file.name, checked).apply()
-                    runButton.isEnabled = checked && runtimeReady
-                    runButton.alpha = if (runButton.isEnabled) 1f else 0.45f
+                    if (checked) { output.text = if (runtimeReady) "Carregando " + file.name + "…" else "Ativado: será carregado quando o jogo estiver pronto."; if (runtimeReady) autoRunMod(file) }
+                    else { synchronized(executedMods) { executedMods.remove(file.name) }; output.text = file.name + " desativado. Não será carregado novamente nesta sessão." }
                 }
             }
             card.addView(enabled)
-            card.addView(runButton, LinearLayout.LayoutParams(-1, dp(38)))
-            val params = LinearLayout.LayoutParams(-1, -2)
-            params.bottomMargin = dp(7)
-            modsList.addView(card, params)
+            card.addView(TextView(this).apply { text = if (enabled.isChecked) "Ativo • carregamento automático" else "Desativado • toque para ativar"; textSize = 10f; setTextColor(Color.LTGRAY); setPadding(dp(4), dp(3), 0, 0) })
+            val params = LinearLayout.LayoutParams(-1, -2); params.bottomMargin = dp(7); modsList.addView(card, params)
         }
+        if (runtimeReady) autoRunEnabledMods(packages)
+    }
+
+    private fun autoRunEnabledMods(packages: List<File>) {
+        val prefs = getSharedPreferences("gdhub_mod_states", MODE_PRIVATE)
+        packages.filter { prefs.getBoolean(it.name, true) }.forEach { autoRunMod(it) }
+    }
+
+    private fun autoRunMod(file: File) {
+        if (!runtimeReady || !file.isFile) return
+        val prefs = getSharedPreferences("gdhub_mod_states", MODE_PRIVATE)
+        if (!prefs.getBoolean(file.name, true)) return
+        val shouldRun = synchronized(executedMods) { executedMods.add(file.name) }
+        if (!shouldRun) return
+        Thread {
+            val result = runCatching { GdHubRuntime.nativeRunPackage(file.absolutePath) }.getOrElse { "Falha ao carregar " + file.name + ": " + it.message }
+            runOnUiThread { if (prefs.getBoolean(file.name, true)) { output.text = result; showPackageInterface(result) } }
+        }.start()
     }
 
     companion object {
