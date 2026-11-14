@@ -244,11 +244,10 @@ public class MainActivity extends Activity {
             LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-1,-2);cp.bottomMargin=dp(9);list.addView(card,cp);
             card.addView(text("▣  "+file.getName(),13,TEXT,true));
             TextView meta=text("PACOTE GDHB  •  ARMAZENADO NO APP",9,MUTED,false);meta.setPadding(0,dp(5),0,dp(10));card.addView(meta);
-            Switch enabled=new Switch(this);enabled.setText("Ativado no gerenciador");enabled.setTextColor(TEXT);enabled.setTextSize(11);enabled.setChecked(modPrefs.getBoolean(file.getName(),false));
+            Switch enabled=new Switch(this);enabled.setText("Ativado no gerenciador");enabled.setTextColor(TEXT);enabled.setTextSize(11);enabled.setChecked(modPrefs.getBoolean(file.getName(),true));
             enabled.setOnCheckedChangeListener((button,checked)->modPrefs.edit().putBoolean(file.getName(),checked).apply());card.addView(enabled);
-            LinearLayout row=new LinearLayout(this);Button run=button("Validar e executar",PURPLE);run.setOnClickListener(v->runPackage(file));row.addView(run,new LinearLayout.LayoutParams(0,dp(42),1));
-            Button del=button("Remover",0xFF30202D);del.setTextColor(0xFFFFA6B5);del.setOnClickListener(v->{if(file.delete())scanPackages();else status.setText("Não foi possível remover.");});
-            LinearLayout.LayoutParams deleteParams=new LinearLayout.LayoutParams(dp(92),dp(42));deleteParams.leftMargin=dp(8);row.addView(del,deleteParams);card.addView(row);
+            Button del=button("Remover",0xFF30202D);del.setTextColor(0xFFFFA6B5);del.setOnClickListener(v->{if(file.delete()){modPrefs.edit().remove(file.getName()).apply();scanPackages();}else status.setText("Não foi possível remover.");});
+            LinearLayout.LayoutParams deleteParams=new LinearLayout.LayoutParams(-1,dp(40));deleteParams.topMargin=dp(7);card.addView(del,deleteParams);
         }
     }
 
