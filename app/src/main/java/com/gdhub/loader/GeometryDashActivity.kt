@@ -38,6 +38,7 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
     private lateinit var overlayPanel: LinearLayout
     private lateinit var output: TextView
     private lateinit var modsList: LinearLayout
+    private var packageDialog: AlertDialog? = null
     @Volatile private var runtimeReady = false
     private val executedMods = mutableSetOf<String>()
     private val gamePackage = GameInstallProbe.GAME_PACKAGE
