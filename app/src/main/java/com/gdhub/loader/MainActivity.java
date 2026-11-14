@@ -36,6 +36,7 @@ public class MainActivity extends Activity {
     private final ArrayList<File> packages=new ArrayList<>();
     private SharedPreferences modPrefs;
     private static final String PREFS_MODS="gdhub_mod_states";
+    private static final String PREFS_SETTINGS="gdhub_settings";
     private static final String PREFS_DRAFT="gdhub_publish_draft";
 
     private int dp(int n){return (int)(n*getResources().getDisplayMetrics().density+0.5f);}
