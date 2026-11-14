@@ -66,7 +66,9 @@ public class MainActivity extends Activity {
         names.setOrientation(1); names.setPadding(dp(13),0,0,0);
         names.addView(text("GD HUB",25,TEXT,true));
         names.addView(text("MOD MANAGER  •  ANDROID",10,MUTED,true));
-        brand.addView(names);
+        brand.addView(names,new LinearLayout.LayoutParams(0,-2,1));
+        Button settings=button("⚙",PANEL);settings.setTextSize(19);settings.setContentDescription("Configurações");settings.setOnClickListener(v->showSettings());
+        brand.addView(settings,new LinearLayout.LayoutParams(dp(48),dp(48)));
         root.addView(brand,new LinearLayout.LayoutParams(-1,dp(62)));
         managerPage=buildManagerPage();
         root.addView(managerPage,new LinearLayout.LayoutParams(-1,0,1));
@@ -104,6 +106,14 @@ public class MainActivity extends Activity {
         Button publish=button("PUBLICAR NO CATÁLOGO",0xFF6842D8);LinearLayout.LayoutParams pp=new LinearLayout.LayoutParams(-1,dp(52));pp.topMargin=dp(7);page.addView(publish,pp);publish.setOnClickListener(v->publishOrSaveDraft());
         publishStatus=text("O catálogo online ainda precisa ser conectado.",11,MUTED,false);publishStatus.setPadding(dp(3),dp(10),dp(3),0);page.addView(publishStatus);
         return scroll;
+    }
+
+    private void showSettings(){
+        SharedPreferences prefs=getSharedPreferences(PREFS_SETTINGS,MODE_PRIVATE);
+        LinearLayout content=new LinearLayout(this);content.setOrientation(1);content.setPadding(dp(18),dp(8),dp(18),dp(4));
+        Switch confirmRemove=new Switch(this);confirmRemove.setText("Confirmar antes de remover mods");confirmRemove.setTextColor(TEXT);confirmRemove.setChecked(prefs.getBoolean("confirm_remove",true));confirmRemove.setOnCheckedChangeListener((v,checked)->prefs.edit().putBoolean("confirm_remove",checked).apply());content.addView(confirmRemove);
+        TextView info=text("Os mods .gdhb ativados são carregados automaticamente quando o Geometry Dash inicia. Desative um mod na biblioteca para impedir o carregamento.",12,MUTED,false);info.setPadding(0,dp(14),0,dp(8));content.addView(info);
+        new android.app.AlertDialog.Builder(this).setTitle("Configurações do GD Hub").setView(content).setPositiveButton("Fechar",null).show();
     }
 
     private void addField(LinearLayout page,EditText edit){LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.topMargin=dp(5);p.bottomMargin=dp(12);page.addView(edit,p);}
@@ -246,7 +256,7 @@ public class MainActivity extends Activity {
             TextView meta=text("PACOTE GDHB  •  ARMAZENADO NO APP",9,MUTED,false);meta.setPadding(0,dp(5),0,dp(10));card.addView(meta);
             Switch enabled=new Switch(this);enabled.setText("Ativado no gerenciador");enabled.setTextColor(TEXT);enabled.setTextSize(11);enabled.setChecked(modPrefs.getBoolean(file.getName(),true));
             enabled.setOnCheckedChangeListener((button,checked)->modPrefs.edit().putBoolean(file.getName(),checked).apply());card.addView(enabled);
-            Button del=button("Remover",0xFF30202D);del.setTextColor(0xFFFFA6B5);del.setOnClickListener(v->{if(file.delete()){modPrefs.edit().remove(file.getName()).apply();scanPackages();}else status.setText("Não foi possível remover.");});
+            Button del=button("Remover",0xFF30202D);del.setTextColor(0xFFFFA6B5);del.setOnClickListener(v->{Runnable remove=()->{if(file.delete()){modPrefs.edit().remove(file.getName()).apply();scanPackages();}else status.setText("Não foi possível remover.");};if(getSharedPreferences(PREFS_SETTINGS,MODE_PRIVATE).getBoolean("confirm_remove",true))new android.app.AlertDialog.Builder(this).setTitle("Remover mod?").setMessage("O arquivo "+file.getName()+" será apagado do GD Hub.").setNegativeButton("Cancelar",null).setPositiveButton("Remover",(d,w)->remove.run()).show();else remove.run();});
             LinearLayout.LayoutParams deleteParams=new LinearLayout.LayoutParams(-1,dp(40));deleteParams.topMargin=dp(7);card.addView(del,deleteParams);
         }
     }
