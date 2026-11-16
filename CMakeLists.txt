@@ -34,6 +34,29 @@ if(ANDROID)
     FetchContent_GetProperties(dobby_source)
     if(NOT dobby_source_POPULATED)
         FetchContent_Populate(dobby_source)
+
+        # Compatibility fixes for the pinned Dobby revision with the Android NDK:
+        # its ARM register header includes Cpu.h, while this revision provides
+        # the base declaration in CpuRegister.h.
+        file(MAKE_DIRECTORY "${dobby_source_SOURCE_DIR}/source/core/arch")
+        file(WRITE "${dobby_source_SOURCE_DIR}/source/core/arch/Cpu.h"
+            "#pragma once\n#include \"core/arch/CpuRegister.h\"\n")
+
+        # Dobby's AArch64 closure bridge uses Mach-O @PAGE/@PAGEOFF relocations
+        # unconditionally. Android ELF/Clang requires the ELF :lo12: form.
+        set(_dobby_arm64_bridge
+            "${dobby_source_SOURCE_DIR}/source/TrampolineBridge/ClosureTrampolineBridge/arm64/closure_bridge_arm64.asm")
+        file(READ "${_dobby_arm64_bridge}" _dobby_arm64_asm)
+        string(REPLACE
+            "adrp TMP_REG_0, cdecl(common_closure_bridge_handler)@PAGE"
+            "adrp TMP_REG_0, common_closure_bridge_handler"
+            _dobby_arm64_asm "${_dobby_arm64_asm}")
+        string(REPLACE
+            "add TMP_REG_0, TMP_REG_0, cdecl(common_closure_bridge_handler)@PAGEOFF"
+            "add TMP_REG_0, TMP_REG_0, :lo12:common_closure_bridge_handler"
+            _dobby_arm64_asm "${_dobby_arm64_asm}")
+        file(WRITE "${_dobby_arm64_bridge}" "${_dobby_arm64_asm}")
+
         add_subdirectory(${dobby_source_SOURCE_DIR} ${dobby_source_BINARY_DIR} EXCLUDE_FROM_ALL)
     endif()
 
