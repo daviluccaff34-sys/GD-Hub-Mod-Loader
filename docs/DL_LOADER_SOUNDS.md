@@ -19,3 +19,20 @@ The manager copies the packaged assets into the app cache and loads them with An
 Missing audio files are tolerated during development: the game launcher continues to work, but playback is silent. The OGG files themselves are not yet committed in this revision; do not treat sound integration as complete until the five original files are present in the asset directory and playback is tested on an Android device.
 
 No native `.so` files are required for this sound system.
+
+## Import helper
+
+The repository includes `tools/import_dl_sounds.py`. From the repository root, run:
+
+```sh
+python3 tools/import_dl_sounds.py /path/to/sounds.zip
+```
+
+On Termux, after installing Python and placing `sounds.zip` in the repository root:
+
+```sh
+pkg install python
+python tools/import_dl_sounds.py sounds.zip
+```
+
+The helper copies only the five expected OGG files; it does not extract arbitrary archive entries. After importing, build the Android APK and test opening/closing the in-game panel. The helper does not upload files to GitHub by itself.
