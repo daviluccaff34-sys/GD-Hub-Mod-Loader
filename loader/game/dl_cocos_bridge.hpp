@@ -4,12 +4,12 @@
 
 namespace gdhub::game {
 
-// A deliberately conservative boundary between the loader and the game's
-// already-running Cocos2d-x instance. This first migration stage only reports
-// runtime readiness; it does not invoke engine functions.
+// Diagnostic boundary for the game's already-running Cocos2d-x instance.
+// Symbol detection is deliberately separate from hook installation/readiness.
 enum class DLCocosStatus {
     LibraryUnavailable,
-    SymbolsIncomplete,
+    CoreSymbolsIncomplete,
+    SceneLifecycleSymbolsIncomplete,
     SymbolsDetected
 };
 
@@ -17,15 +17,23 @@ struct DLCocosSnapshot {
     DLCocosStatus status = DLCocosStatus::LibraryUnavailable;
     CocosRuntimeSymbols symbols{};
 
-    bool can_attach() const {
+    // A future, independently tested hook backend must explicitly set this.
+    // Symbol resolution alone must never authorize attachment.
+    bool hook_backend_ready = false;
+
+    bool symbols_detected() const {
         return status == DLCocosStatus::SymbolsDetected;
+    }
+
+    bool can_attach() const {
+        return symbols_detected() && hook_backend_ready;
     }
 };
 
 class DLCocosBridge {
 public:
     // Safe diagnostic probe. Call after Geometry Dash has initialized Cocos.
-    // No Cocos function is called by this operation.
+    // No Cocos function is called and no hook is installed by this operation.
     DLCocosSnapshot inspect() const;
 };
 
