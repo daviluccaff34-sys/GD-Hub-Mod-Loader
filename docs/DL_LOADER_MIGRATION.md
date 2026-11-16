@@ -17,13 +17,13 @@ The Android namespace and application ID remain `com.gdhub.loader` intentionally
 
 ## Runtime integration status
 
-The existing Cocos probe checks whether the Geometry Dash Cocos shared library is already loaded and whether selected mangled symbols can be resolved. `DLCocosBridge::inspect()` exposes that result as one of:
+The existing probe checks whether the Geometry Dash Cocos shared library is already loaded and whether selected Cocos functions plus the 2.2081 `MenuLayer::init`, `PlayLayer::init`, and `LevelEditorLayer::init` symbols can be resolved. `DLCocosBridge::inspect()` exposes that result as one of:
 
 - `LibraryUnavailable`
 - `SymbolsIncomplete`
 - `SymbolsDetected`
 
-**SymbolsDetected is not proof that calling those functions is safe.** This stage deliberately does not call Cocos functions, create nodes, change levels, or claim that game-object integration is complete.
+**SymbolsDetected is not proof that calling those functions is safe.** The three Geometry Dash layer entry points are resolved for compatibility diagnostics only; this stage deliberately does not call them, install hooks, call Cocos functions, create nodes, change levels, or claim that game-object integration is complete.
 
 Before adding calls, the adapter needs verified target-build signatures and ABI details, object ownership/refcount rules, render-thread dispatch, and physical-device tests for Geometry Dash 2.2081 on ARM32 and ARM64.
 
