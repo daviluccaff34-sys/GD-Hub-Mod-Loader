@@ -6,6 +6,7 @@
 #include "loader/game/game_ui_layout.hpp"
 #include "loader/game/game_ui_render_plan.hpp"
 #include "loader/game/cocos_runtime_symbols.hpp"
+#include "loader/game/dl_cocos_bridge.hpp"
 #include <cstdio>
 #include <cstdint>
 #include <fstream>
@@ -208,16 +209,29 @@ int main() {
 
     auto fake_cocos = gdhub::game::inspect_cocos_symbols(fake_cocos_symbol_lookup);
     fake_cocos.library_loaded = true;
+    ok &= check(fake_cocos.has_core_symbols(),
+                "Cocos probe accepts complete core node API");
+    ok &= check(fake_cocos.has_scene_lifecycle_symbols(),
+                "Cocos probe resolves all three Geometry Dash lifecycle methods");
     ok &= check(fake_cocos.has_required_symbols(),
-                "Cocos symbol probe accepts complete verified symbol set");
+                "Cocos probe accepts complete core and lifecycle symbol profile");
+
     fake_cocos.sprite_create = nullptr;
-    ok &= check(!fake_cocos.has_required_symbols(),
-                "Cocos symbol probe rejects incomplete Cocos symbol set");
+    ok &= check(!fake_cocos.has_core_symbols(),
+                "Cocos probe rejects incomplete core node API");
     fake_cocos = gdhub::game::inspect_cocos_symbols(fake_cocos_symbol_lookup);
     fake_cocos.library_loaded = true;
     fake_cocos.play_layer_init = nullptr;
-    ok &= check(!fake_cocos.has_required_symbols(),
-                "Cocos symbol probe rejects missing Geometry Dash entry point");
+    ok &= check(fake_cocos.has_core_symbols() &&
+                !fake_cocos.has_scene_lifecycle_symbols() &&
+                !fake_cocos.has_required_symbols(),
+                "missing scene method is distinguished from missing core API");
+
+    gdhub::game::DLCocosSnapshot symbol_snapshot;
+    symbol_snapshot.status = gdhub::game::DLCocosStatus::SymbolsDetected;
+    symbol_snapshot.symbols = fake_cocos;
+    ok &= check(symbol_snapshot.symbols_detected() && !symbol_snapshot.can_attach(),
+                "resolved symbols alone never authorize hook attachment");
     ok &= check(!gdhub::game::inspect_cocos_symbols(nullptr).has_required_symbols(),
                 "Cocos symbol probe rejects missing lookup provider");
 
