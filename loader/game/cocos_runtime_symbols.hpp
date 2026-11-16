@@ -19,6 +19,8 @@ struct CocosRuntimeSymbols {
     void* play_layer_init = nullptr;
     void* level_editor_layer_init = nullptr;
 
+    bool has_core_symbols() const;
+    bool has_scene_lifecycle_symbols() const;
     bool has_required_symbols() const;
 };
 
