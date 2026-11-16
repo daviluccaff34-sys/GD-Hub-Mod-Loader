@@ -57,7 +57,10 @@ static void* fake_cocos_symbol_lookup(const char* name) {
         symbol == "_ZN7cocos2d6CCNode8setScaleEf" ||
         symbol == "_ZN7cocos2d6CCNode26removeFromParentAndCleanupEb" ||
         symbol == "_ZN7cocos2d8CCSprite6createEPKc" ||
-        symbol == "_ZN7cocos2d13CCLabelBMFont6createEPKcS2_") {
+        symbol == "_ZN7cocos2d13CCLabelBMFont6createEPKcS2_" ||
+        symbol == "_ZN9MenuLayer4initEv" ||
+        symbol == "_ZN9PlayLayer4initEP11GJGameLevelbb" ||
+        symbol == "_ZN16LevelEditorLayer4initEP11GJGameLevelb") {
         return reinterpret_cast<void*>(static_cast<std::uintptr_t>(1));
     }
     return nullptr;
@@ -209,7 +212,12 @@ int main() {
                 "Cocos symbol probe accepts complete verified symbol set");
     fake_cocos.sprite_create = nullptr;
     ok &= check(!fake_cocos.has_required_symbols(),
-                "Cocos symbol probe rejects incomplete symbol set");
+                "Cocos symbol probe rejects incomplete Cocos symbol set");
+    fake_cocos = gdhub::game::inspect_cocos_symbols(fake_cocos_symbol_lookup);
+    fake_cocos.library_loaded = true;
+    fake_cocos.play_layer_init = nullptr;
+    ok &= check(!fake_cocos.has_required_symbols(),
+                "Cocos symbol probe rejects missing Geometry Dash entry point");
     ok &= check(!gdhub::game::inspect_cocos_symbols(nullptr).has_required_symbols(),
                 "Cocos symbol probe rejects missing lookup provider");
 
