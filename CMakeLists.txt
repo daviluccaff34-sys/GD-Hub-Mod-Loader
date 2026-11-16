@@ -19,7 +19,24 @@ add_library(gdhub_loader SHARED
 target_include_directories(gdhub_loader PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 if(ANDROID)
     target_compile_definitions(gdhub_loader PRIVATE GDHUB_ANDROID=1)
-    target_link_libraries(gdhub_loader PRIVATE dl)
+
+    # Build the ARM32/ARM64 inline-hook engine from source and link it
+    # statically into DL Loader. The shared Dobby target is excluded from
+    # the default build; no third-party .so is loaded or shipped.
+    include(FetchContent)
+    FetchContent_Declare(
+        dobby_source
+        GIT_REPOSITORY https://github.com/jmpews/Dobby.git
+        GIT_TAG 5dfc8546954ce3b3198132ab13fddb89ee92cdd7
+        GIT_SHALLOW FALSE
+    )
+    FetchContent_GetProperties(dobby_source)
+    if(NOT dobby_source_POPULATED)
+        FetchContent_Populate(dobby_source)
+        add_subdirectory(${dobby_source_SOURCE_DIR} ${dobby_source_BINARY_DIR} EXCLUDE_FROM_ALL)
+    endif()
+
+    target_link_libraries(gdhub_loader PRIVATE dl dobby_static)
     target_sources(gdhub_loader PRIVATE loader/jni/jni_bridge.cpp)
 
     add_library(gdhub_launcherfix SHARED
