@@ -14,6 +14,11 @@ struct CocosRuntimeSymbols {
     void* sprite_create = nullptr;
     void* label_create = nullptr;
 
+    // Geometry Dash 2.2081 scene/layer entry points (resolved only; not called yet).
+    void* menu_layer_init = nullptr;
+    void* play_layer_init = nullptr;
+    void* level_editor_layer_init = nullptr;
+
     bool has_required_symbols() const;
 };
 
