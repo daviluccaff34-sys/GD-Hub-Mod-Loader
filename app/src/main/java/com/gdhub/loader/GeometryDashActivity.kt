@@ -456,6 +456,10 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
 
     @Deprecated("Deprecated in Android API")
     override fun onBackPressed() {
+        if (::overlayPanel.isInitialized && overlayPanel.visibility == View.VISIBLE) {
+            closeDLLoaderScreen()
+            return
+        }
         if (::gameView.isInitialized) gameView.sendKeyBack() else super.onBackPressed()
     }
 
