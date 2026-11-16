@@ -20,6 +20,9 @@ CocosRuntimeSymbols inspect(Lookup lookup) {
         lookup("_ZN7cocos2d6CCNode26removeFromParentAndCleanupEb");
     result.sprite_create = lookup("_ZN7cocos2d8CCSprite6createEPKc");
     result.label_create = lookup("_ZN7cocos2d13CCLabelBMFont6createEPKcS2_");
+    result.menu_layer_init = lookup("_ZN9MenuLayer4initEv");
+    result.play_layer_init = lookup("_ZN9PlayLayer4initEP11GJGameLevelbb");
+    result.level_editor_layer_init = lookup("_ZN16LevelEditorLayer4initEP11GJGameLevelb");
     return result;
 }
 
@@ -28,7 +31,8 @@ CocosRuntimeSymbols inspect(Lookup lookup) {
 bool CocosRuntimeSymbols::has_required_symbols() const {
     return library_loaded && director_shared && node_add_child &&
            node_set_position && node_set_scale && node_remove_from_parent &&
-           sprite_create && label_create;
+           sprite_create && label_create && menu_layer_init &&
+           play_layer_init && level_editor_layer_init;
 }
 
 CocosRuntimeSymbols inspect_cocos_symbols(CocosSymbolLookup lookup) {
