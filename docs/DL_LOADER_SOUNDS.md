@@ -2,7 +2,7 @@
 
 The Android runtime sound player is `DLSoundManager`.
 
-Place the five original OGG files from the approved `sounds.zip` archive in:
+The five original OGG files from the approved `sounds.zip` archive belong in:
 
 `app/src/main/assets/sounds/`
 
@@ -22,17 +22,12 @@ No native `.so` files are required for this sound system.
 
 ## Import helper
 
-The repository includes `tools/import_dl_sounds.py`. From the repository root, run:
+The repository includes `tools/import_dl_sounds.py` for desktop development environments with Python 3. From the repository root, run:
 
 ```sh
 python3 tools/import_dl_sounds.py /path/to/sounds.zip
 ```
 
-On Termux, after installing Python and placing `sounds.zip` in the repository root:
+The helper copies only the five expected OGG files; it does not extract arbitrary archive entries. After importing, build the Android APK in Android Studio or through the repository's build workflow and test audio playback on an Android device.
 
-```sh
-pkg install python
-python tools/import_dl_sounds.py sounds.zip
-```
-
-The helper copies only the five expected OGG files; it does not extract arbitrary archive entries. After importing, build the Android APK and test opening/closing the in-game panel. The helper does not upload files to GitHub by itself.
+**Termux is not part of the DL Loader development or build workflow.** The helper does not upload files to GitHub by itself.
