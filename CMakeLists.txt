@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(GDHubModLoader VERSION 0.1.0 LANGUAGES CXX)
+project(DLLoader VERSION 0.3.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -10,6 +10,7 @@ add_library(gdhub_loader SHARED
     loader/game/game_ui_layout.cpp
     loader/game/game_ui_render_plan.cpp
     loader/game/cocos_runtime_symbols.cpp
+    loader/game/dl_cocos_bridge.cpp
     runtime/package/gdhb_reader.cpp
     runtime/language/dash_interpreter.cpp
     runtime/mod_runtime.cpp
