@@ -46,3 +46,22 @@ Run native tests with:
     ctest --test-dir build --output-on-failure
 
 Android builds continue to target `armeabi-v7a` and `arm64-v8a`.
+
+## Cocos lifecycle resolution hardening
+
+The 2.2081 runtime probe now reports core Cocos node API availability separately from Geometry Dash scene/layer lifecycle symbol availability:
+
+- `has_core_symbols()`: director, node operations, sprite creation, and BMFont label creation.
+- `has_scene_lifecycle_symbols()`: `MenuLayer::init()`, `PlayLayer::init(GJGameLevel*, bool, bool)`, and `LevelEditorLayer::init(GJGameLevel*, bool)`.
+- `has_required_symbols()`: both capability groups are present.
+
+The bridge status distinguishes an unavailable library, incomplete core symbols, incomplete scene lifecycle symbols, and a complete symbol profile.
+
+**A complete symbol profile does not authorize a hook.** `DLCocosSnapshot::can_attach()` remains false unless a separately implemented and validated hook backend explicitly reports readiness. The current bridge always leaves that readiness false; it still does not call game functions, install detours, or dispatch work to the render thread.
+
+Next validation work before any hook implementation:
+1. Compare each exact mangled signature and class declaration against the 2.2081 APK and the decompiled reference.
+2. Establish whether the selected init methods can be safely intercepted and how the original method must be invoked exactly once.
+3. Verify object lifetime/refcount and re-entrancy behavior for each scene transition.
+4. Establish a render-thread dispatch mechanism from the actual Android/Cocos lifecycle.
+5. Only then select and implement a hook backend, with independent ARM32 and ARM64 tests.
