@@ -34,6 +34,7 @@ import java.util.zip.ZipFile
 
 class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
     private lateinit var gameView: Cocos2dxGLSurfaceView
+    private lateinit var dlSounds: DLSoundManager
     private lateinit var renderer: Cocos2dxRenderer
     private lateinit var overlayPanel: LinearLayout
     private lateinit var output: TextView
@@ -47,6 +48,7 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        dlSounds = DLSoundManager(this)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         window.decorView.systemUiVisibility = (
@@ -215,9 +217,11 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
                     if (!dragged) {
                         if (overlayPanel.visibility == View.VISIBLE) {
                             overlayPanel.visibility = View.GONE
+                            dlSounds.play("byeNotif00")
                         } else {
                             refreshModList()
                             overlayPanel.visibility = View.VISIBLE
+                            dlSounds.play("newNotif00")
                         }
                         view.performClick()
                     }
@@ -250,7 +254,7 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
         header.addView(Button(this).apply {
             text = "×"
             contentDescription = "Fechar painel"
-            setOnClickListener { overlayPanel.visibility = View.GONE }
+            setOnClickListener { overlayPanel.visibility = View.GONE; dlSounds.play("byeNotif00") }
         }, LinearLayout.LayoutParams(dp(42), dp(38)))
         overlayPanel.addView(header)
         header.contentDescription = "Arraste esta barra para mover o painel do GD Hub."
@@ -491,6 +495,7 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
 
     override fun onDestroy() {
         getSharedPreferences("gdhub_boot_diagnostics", MODE_PRIVATE).edit().putString("stage", "Activity encerrada normalmente").commit()
+        runCatching { dlSounds.release() }
         runCatching { FMOD.close() }
         BaseRobTopActivity.clearCurrentActivity(this)
         Cocos2dxHostContext.current = null
