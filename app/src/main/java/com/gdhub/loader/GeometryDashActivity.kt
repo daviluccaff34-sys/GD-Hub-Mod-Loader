@@ -5,13 +5,10 @@ import android.app.AlertDialog
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageInfo
 import android.graphics.Color
-import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.os.Environment
 import android.os.Process
-import android.view.Gravity
-import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
@@ -43,7 +40,6 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
     @Volatile private var runtimeReady = false
     private val executedMods = mutableSetOf<String>()
     private val gamePackage = GameInstallProbe.GAME_PACKAGE
-    private val purple = Color.rgb(116, 75, 230)
     private val panelColor = Color.rgb(25, 24, 38)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -172,30 +168,10 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
 
     /**
      * Builds the dedicated DL Loader screen above the game's Cocos surface.
-     *
-     * The small Android entry control is a temporary compatibility trigger.
-     * The final Newgrounds-adjacent entry point must be attached to the game's
-     * Cocos main-menu scene after its menu lifecycle and ABI are verified.
+     * The entry point is intentionally not an Android View: the native
+     * Geometry Dash MenuLayer integration will call openDLLoaderScreen().
      */
     private fun buildModOverlay(root: FrameLayout) {
-        val entry = TextView(this).apply {
-            text = "DL"
-            textSize = 15f
-            setTextColor(Color.WHITE)
-            typeface = Typeface.DEFAULT_BOLD
-            gravity = Gravity.CENTER
-            background = rounded(Color.rgb(91, 55, 190), 13).apply {
-                setStroke(dp(1), Color.rgb(174, 143, 255))
-            }
-            elevation = dp(10).toFloat()
-            contentDescription = "Abrir DL Loader"
-            isClickable = true
-            isFocusable = true
-        }
-        val entryParams = FrameLayout.LayoutParams(dp(46), dp(42), Gravity.BOTTOM or Gravity.END)
-        entryParams.setMargins(0, 0, dp(14), dp(14))
-        root.addView(entry, entryParams)
-
         overlayPanel = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(18), dp(14), dp(18), dp(14))
@@ -272,16 +248,14 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
 
         root.addView(overlayPanel, FrameLayout.LayoutParams(-1, -1))
 
-        entry.setOnClickListener {
-            if (overlayPanel.visibility == View.VISIBLE) {
-                closeDLLoaderScreen()
-            } else {
-                refreshModList()
-                overlayPanel.visibility = View.VISIBLE
-                dlSounds.play("newNotif00")
-            }
-        }
         refreshModList()
+    }
+
+    private fun openDLLoaderScreenFromNative() {
+        if (!::overlayPanel.isInitialized) return
+        refreshModList()
+        overlayPanel.visibility = View.VISIBLE
+        dlSounds.play("newNotif00")
     }
 
     private fun closeDLLoaderScreen() {
@@ -399,6 +373,16 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
 
     companion object {
         @Volatile private var activeActivity: GeometryDashActivity? = null
+
+        /**
+         * Called by the native Cocos menu button callback once the verified
+         * MenuLayer hook is installed. No Android entry widget is created.
+         */
+        @JvmStatic
+        fun openDLLoaderScreen() {
+            val activity = activeActivity ?: return
+            activity.runOnUiThread { activity.openDLLoaderScreenFromNative() }
+        }
 
         @JvmStatic
         fun onNativeRuntimeReady(message: String) {
