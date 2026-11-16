@@ -10,6 +10,7 @@ add_library(gdhub_loader SHARED
     loader/game/game_ui_layout.cpp
     loader/game/game_ui_render_plan.cpp
     loader/game/cocos_runtime_symbols.cpp
+    loader/game/inline_hook_backend.cpp
     loader/game/dl_cocos_bridge.cpp
     runtime/package/gdhb_reader.cpp
     runtime/language/dash_interpreter.cpp
