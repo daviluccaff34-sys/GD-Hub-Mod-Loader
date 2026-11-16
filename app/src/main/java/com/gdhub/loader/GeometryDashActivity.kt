@@ -5,11 +5,13 @@ import android.app.AlertDialog
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageInfo
 import android.graphics.Color
+import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.os.Environment
 import android.os.Process
 import android.view.View
+import android.view.Gravity
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.EditText
