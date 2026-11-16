@@ -59,14 +59,14 @@ public class MainActivity extends Activity {
         root.setBackgroundColor(BG);
         LinearLayout brand=new LinearLayout(this);
         brand.setGravity(Gravity.CENTER_VERTICAL);
-        TextView logo=text("GD",21,Color.WHITE,true);
+        TextView logo=text("DL",21,Color.WHITE,true);
         logo.setGravity(Gravity.CENTER);
         logo.setBackground(box(PURPLE,17));
         brand.addView(logo,new LinearLayout.LayoutParams(dp(54),dp(54)));
         LinearLayout names=new LinearLayout(this);
         names.setOrientation(1); names.setPadding(dp(13),0,0,0);
-        names.addView(text("GD HUB",25,TEXT,true));
-        names.addView(text("MOD MANAGER  •  ANDROID",10,MUTED,true));
+        names.addView(text("DL LAUNCHER",25,TEXT,true));
+        names.addView(text("GEOMETRY DASH MOD LOADER",10,MUTED,true));
         brand.addView(names,new LinearLayout.LayoutParams(0,-2,1));
         Button settings=button("⚙",PANEL);settings.setTextSize(19);settings.setContentDescription("Configurações");settings.setOnClickListener(v->showSettings());
         brand.addView(settings,new LinearLayout.LayoutParams(dp(48),dp(48)));
@@ -89,7 +89,7 @@ public class MainActivity extends Activity {
         summary.addView(text("BIBLIOTECA DE PACOTES",10,MUTED,true));
         status=text("Carregando…",13,TEXT,false);status.setPadding(0,dp(5),0,0);summary.addView(status);LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(-1,-2);sp.topMargin=dp(10);page.addView(summary,sp);
         list=new LinearLayout(this);list.setOrientation(1);list.setPadding(0,dp(12),0,0);page.addView(list);
-        TextView footer=text("GD HUB  •  ARM32 + ARM64  •  v0.2.0-alpha",10,0xFF666982,false);footer.setGravity(Gravity.CENTER);footer.setPadding(0,dp(18),0,dp(8));page.addView(footer);
+        TextView footer=text("DL LAUNCHER  •  ARM32 + ARM64  •  v0.3.0-alpha",10,0xFF666982,false);footer.setGravity(Gravity.CENTER);footer.setPadding(0,dp(18),0,dp(8));page.addView(footer);
         return scroll;
     }
 
@@ -114,7 +114,7 @@ public class MainActivity extends Activity {
         LinearLayout content=new LinearLayout(this);content.setOrientation(1);content.setPadding(dp(18),dp(8),dp(18),dp(4));
         Switch confirmRemove=new Switch(this);confirmRemove.setText("Confirmar antes de remover mods");confirmRemove.setTextColor(TEXT);confirmRemove.setChecked(prefs.getBoolean("confirm_remove",true));confirmRemove.setOnCheckedChangeListener((v,checked)->prefs.edit().putBoolean("confirm_remove",checked).apply());content.addView(confirmRemove);
         TextView info=text("Os mods .gdhb ativados são carregados automaticamente quando o Geometry Dash inicia. Desative um mod na biblioteca para impedir o carregamento.",12,MUTED,false);info.setPadding(0,dp(14),0,dp(8));content.addView(info);
-        new android.app.AlertDialog.Builder(this).setTitle("Configurações do GD Hub").setView(content).setPositiveButton("Fechar",null).show();
+        new android.app.AlertDialog.Builder(this).setTitle("Configurações do DL Launcher").setView(content).setPositiveButton("Fechar",null).show();
     }
 
     private void addField(LinearLayout page,EditText edit){LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,-2);p.topMargin=dp(5);p.bottomMargin=dp(12);page.addView(edit,p);}

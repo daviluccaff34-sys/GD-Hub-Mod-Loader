@@ -10,9 +10,8 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.os.Environment
 import android.os.Process
-import android.view.Gravity
-import android.view.MotionEvent
 import android.view.View
+import android.view.Gravity
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.EditText
@@ -34,6 +33,7 @@ import java.util.zip.ZipFile
 
 class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
     private lateinit var gameView: Cocos2dxGLSurfaceView
+    private lateinit var dlSounds: DLSoundManager
     private lateinit var renderer: Cocos2dxRenderer
     private lateinit var overlayPanel: LinearLayout
     private lateinit var output: TextView
@@ -42,11 +42,11 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
     @Volatile private var runtimeReady = false
     private val executedMods = mutableSetOf<String>()
     private val gamePackage = GameInstallProbe.GAME_PACKAGE
-    private val purple = Color.rgb(116, 75, 230)
     private val panelColor = Color.rgb(25, 24, 38)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        dlSounds = DLSoundManager(this)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         window.decorView.systemUiVisibility = (
@@ -168,155 +168,101 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
         setContentView(root)
     }
 
+    /**
+     * Builds the dedicated DL Loader screen above the game's Cocos surface.
+     * The entry point is intentionally not an Android View: the native
+     * Geometry Dash MenuLayer integration will call openDLLoaderScreen().
+     */
     private fun buildModOverlay(root: FrameLayout) {
-        val orb = TextView(this).apply {
-            text = "⬡"
-            textSize = 23f
-            setTextColor(Color.WHITE)
-            typeface = Typeface.DEFAULT_BOLD
-            gravity = Gravity.CENTER
-            background = rounded(Color.rgb(91, 55, 190), 15).apply {
-                setStroke(dp(1), Color.rgb(116, 220, 255))
-            }
-            elevation = dp(10).toFloat()
-            contentDescription = "GD Hub flutuante. Arraste para mover ou toque para abrir."
-        }
-        val orbParams = FrameLayout.LayoutParams(dp(40), dp(40), Gravity.BOTTOM or Gravity.END)
-        orbParams.setMargins(0, 0, dp(14), dp(14))
-        root.addView(orb, orbParams)
-        var downX = 0f
-        var downY = 0f
-        var startRight = dp(14)
-        var startBottom = dp(14)
-        var dragged = false
-        orb.setOnTouchListener { view, event ->
-            val params = view.layoutParams as FrameLayout.LayoutParams
-            when (event.actionMasked) {
-                MotionEvent.ACTION_DOWN -> {
-                    downX = event.rawX
-                    downY = event.rawY
-                    startRight = params.rightMargin
-                    startBottom = params.bottomMargin
-                    dragged = false
-                    true
-                }
-                MotionEvent.ACTION_MOVE -> {
-                    val dx = (event.rawX - downX).toInt()
-                    val dy = (event.rawY - downY).toInt()
-                    if (kotlin.math.abs(dx) > dp(4) || kotlin.math.abs(dy) > dp(4)) dragged = true
-                    if (dragged) {
-                        params.rightMargin = (startRight - dx).coerceIn(0, (root.width - view.width).coerceAtLeast(0))
-                        params.bottomMargin = (startBottom - dy).coerceIn(0, (root.height - view.height).coerceAtLeast(0))
-                        view.layoutParams = params
-                    }
-                    true
-                }
-                MotionEvent.ACTION_UP -> {
-                    if (!dragged) {
-                        if (overlayPanel.visibility == View.VISIBLE) {
-                            overlayPanel.visibility = View.GONE
-                        } else {
-                            refreshModList()
-                            overlayPanel.visibility = View.VISIBLE
-                        }
-                        view.performClick()
-                    }
-                    true
-                }
-                MotionEvent.ACTION_CANCEL -> true
-                else -> false
-            }
-        }
-
         overlayPanel = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(12), dp(12), dp(12), dp(12))
-            background = rounded(panelColor, 16)
-            elevation = dp(12).toFloat()
+            setPadding(dp(18), dp(14), dp(18), dp(14))
+            background = rounded(panelColor, 0)
+            elevation = dp(16).toFloat()
             visibility = View.GONE
         }
-        val header = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL }
+
+        val header = LinearLayout(this).apply {
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(0, 0, 0, dp(10))
+        }
         header.addView(TextView(this).apply {
-            text = "GD HUB • MODS"
-            textSize = 13f
+            text = "DL LOADER"
+            textSize = 21f
             setTextColor(Color.WHITE)
             typeface = Typeface.DEFAULT_BOLD
+            letterSpacing = 0.08f
         }, LinearLayout.LayoutParams(0, -2, 1f))
-        header.addView(Button(this).apply {
+
+        val refresh = Button(this).apply {
             text = "↻"
             contentDescription = "Atualizar lista de mods"
-            setOnClickListener { refreshModList() }
-        }, LinearLayout.LayoutParams(dp(42), dp(38)))
-        header.addView(Button(this).apply {
-            text = "×"
-            contentDescription = "Fechar painel"
-            setOnClickListener { overlayPanel.visibility = View.GONE }
-        }, LinearLayout.LayoutParams(dp(42), dp(38)))
-        overlayPanel.addView(header)
-        header.contentDescription = "Arraste esta barra para mover o painel do GD Hub."
-        header.isClickable = true
-        var panelDownX = 0f
-        var panelDownY = 0f
-        var panelStartX = 0f
-        var panelStartY = 0f
-        header.setOnTouchListener { view, event ->
-            val params = overlayPanel.layoutParams as FrameLayout.LayoutParams
-            when (event.actionMasked) {
-                MotionEvent.ACTION_DOWN -> {
-                    panelDownX = event.rawX
-                    panelDownY = event.rawY
-                    panelStartX = overlayPanel.x
-                    panelStartY = overlayPanel.y
-                    true
-                }
-                MotionEvent.ACTION_MOVE -> {
-                    val dx = event.rawX - panelDownX
-                    val dy = event.rawY - panelDownY
-                    if (kotlin.math.abs(dx) > dp(2) || kotlin.math.abs(dy) > dp(2)) {
-                        params.gravity = Gravity.TOP or Gravity.LEFT
-                        params.leftMargin = (panelStartX + dx).toInt().coerceIn(0, (root.width - overlayPanel.width).coerceAtLeast(0))
-                        params.topMargin = (panelStartY + dy).toInt().coerceIn(0, (root.height - overlayPanel.height).coerceAtLeast(0))
-                        params.rightMargin = 0
-                        params.bottomMargin = 0
-                        overlayPanel.layoutParams = params
-                    }
-                    true
-                }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> true
-                else -> false
+            setOnClickListener {
+                refreshModList()
+                dlSounds.play("newNotif01")
             }
         }
+        header.addView(refresh, LinearLayout.LayoutParams(dp(48), dp(42)))
+
+        val close = Button(this).apply {
+            text = "×"
+            contentDescription = "Voltar ao Geometry Dash"
+            setOnClickListener { closeDLLoaderScreen() }
+        }
+        header.addView(close, LinearLayout.LayoutParams(dp(48), dp(42)))
+        overlayPanel.addView(header)
+
+        val subtitle = TextView(this).apply {
+            text = "MODS INSTALADOS"
+            textSize = 11f
+            setTextColor(Color.rgb(174, 143, 255))
+            typeface = Typeface.DEFAULT_BOLD
+            setPadding(0, dp(2), 0, dp(8))
+        }
+        overlayPanel.addView(subtitle)
 
         output = TextView(this).apply {
-            text = "Preparando runtime do GD Hub…"
-            textSize = 11f
+            text = "Preparando runtime do DL Loader…"
+            textSize = 12f
             setTextColor(Color.LTGRAY)
-            setPadding(0, dp(8), 0, dp(8))
+            setPadding(0, dp(5), 0, dp(10))
         }
         overlayPanel.addView(output)
 
-        val scroll = ScrollView(this)
-        modsList = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
-        scroll.addView(modsList)
+        val scroll = ScrollView(this).apply {
+            isFillViewport = true
+        }
+        modsList = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+        }
+        scroll.addView(modsList, FrameLayout.LayoutParams(-1, -2))
         overlayPanel.addView(scroll, LinearLayout.LayoutParams(-1, 0, 1f))
 
-        val exit = Button(this).apply {
-            text = "Sair do jogo"
-            setOnClickListener {
-                AlertDialog.Builder(this@GeometryDashActivity)
-                    .setTitle("Fechar Geometry Dash?")
-                    .setMessage("O jogo será encerrado e você voltará ao GD Hub.")
-                    .setNegativeButton("Cancelar", null)
-                    .setPositiveButton("Sair") { _, _ -> finish() }
-                    .show()
-            }
+        val footer = LinearLayout(this).apply {
+            gravity = Gravity.END or Gravity.CENTER_VERTICAL
+            setPadding(0, dp(10), 0, 0)
         }
-        overlayPanel.addView(exit, LinearLayout.LayoutParams(-1, dp(42)))
+        footer.addView(Button(this).apply {
+            text = "VOLTAR AO JOGO"
+            setOnClickListener { closeDLLoaderScreen() }
+        }, LinearLayout.LayoutParams(-2, dp(46)))
+        overlayPanel.addView(footer)
 
-        val panelParams = FrameLayout.LayoutParams(dp(240), dp(260), Gravity.BOTTOM or Gravity.END)
-        panelParams.setMargins(0, 0, dp(10), dp(50))
-        root.addView(overlayPanel, panelParams)
+        root.addView(overlayPanel, FrameLayout.LayoutParams(-1, -1))
+
         refreshModList()
+    }
+
+    private fun openDLLoaderScreenFromNative() {
+        if (!::overlayPanel.isInitialized) return
+        refreshModList()
+        overlayPanel.visibility = View.VISIBLE
+        dlSounds.play("newNotif00")
+    }
+
+    private fun closeDLLoaderScreen() {
+        if (::overlayPanel.isInitialized) overlayPanel.visibility = View.GONE
+        dlSounds.play("byeNotif00")
     }
 
     private fun showPackageInterface(result: String) {
@@ -430,6 +376,16 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
     companion object {
         @Volatile private var activeActivity: GeometryDashActivity? = null
 
+        /**
+         * Called by the native Cocos menu button callback once the verified
+         * MenuLayer hook is installed. No Android entry widget is created.
+         */
+        @JvmStatic
+        fun openDLLoaderScreen() {
+            val activity = activeActivity ?: return
+            activity.runOnUiThread { activity.openDLLoaderScreenFromNative() }
+        }
+
         @JvmStatic
         fun onNativeRuntimeReady(message: String) {
             val activity = activeActivity ?: return
@@ -486,11 +442,16 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
 
     @Deprecated("Deprecated in Android API")
     override fun onBackPressed() {
+        if (::overlayPanel.isInitialized && overlayPanel.visibility == View.VISIBLE) {
+            closeDLLoaderScreen()
+            return
+        }
         if (::gameView.isInitialized) gameView.sendKeyBack() else super.onBackPressed()
     }
 
     override fun onDestroy() {
         getSharedPreferences("gdhub_boot_diagnostics", MODE_PRIVATE).edit().putString("stage", "Activity encerrada normalmente").commit()
+        runCatching { dlSounds.release() }
         runCatching { FMOD.close() }
         BaseRobTopActivity.clearCurrentActivity(this)
         Cocos2dxHostContext.current = null
