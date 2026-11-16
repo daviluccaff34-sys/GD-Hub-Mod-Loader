@@ -257,7 +257,7 @@ class GeometryDashActivity : Activity(), Cocos2dxHelper.Cocos2dxHelperListener {
         modsList = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
         }
-        scroll.addView(modsList, ScrollView.LayoutParams(-1, -2))
+        scroll.addView(modsList, FrameLayout.LayoutParams(-1, -2))
         overlayPanel.addView(scroll, LinearLayout.LayoutParams(-1, 0, 1f))
 
         val footer = LinearLayout(this).apply {
